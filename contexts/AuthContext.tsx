@@ -24,6 +24,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       setLoading(false);
     }
+
+    // Listen for storage changes (e.g., logout in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'access_token' && !e.newValue) {
+        // Token was removed, user logged out
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadUser = async () => {
@@ -31,8 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await apiClient.getProfile();
       setUser(response.user);
     } catch (error) {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      // Don't automatically clear tokens here since the API client
+      // handles token refresh internally
+      console.error('Failed to load user profile:', error);
     } finally {
       setLoading(false);
     }

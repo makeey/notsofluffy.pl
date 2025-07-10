@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Users, Images, Settings, LogOut, LayoutDashboard } from 'lucide-react';
+import { Users, Images, Settings, LogOut, LayoutDashboard, Tag } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -52,6 +52,11 @@ export default function AdminLayout({
       href: '/admin/images',
       label: 'Images',
       icon: Images,
+    },
+    {
+      href: '/admin/categories',
+      label: 'Categories',
+      icon: Tag,
     },
     {
       href: '/admin/settings',

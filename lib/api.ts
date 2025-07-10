@@ -57,6 +57,33 @@ export interface ImageListResponse {
   limit: number;
 }
 
+export interface CategoryRequest {
+  name: string;
+  slug: string;
+  image_id?: number;
+  active: boolean;
+  chart_only: boolean;
+}
+
+export interface CategoryResponse {
+  id: number;
+  name: string;
+  slug: string;
+  image_id?: number;
+  active: boolean;
+  chart_only: boolean;
+  created_at: string;
+  updated_at: string;
+  image?: ImageResponse;
+}
+
+export interface CategoryListResponse {
+  categories: CategoryResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -66,7 +93,8 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retryOnAuth: boolean = true
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const token = localStorage.getItem('access_token');
@@ -85,12 +113,56 @@ class ApiClient {
       headers,
     });
 
+    // Handle 401 Unauthorized - try to refresh token
+    if (response.status === 401 && retryOnAuth && !endpoint.includes('/auth/')) {
+      const refreshSuccess = await this.tryRefreshToken();
+      if (refreshSuccess) {
+        // Retry the original request with new token
+        return this.request<T>(endpoint, options, false);
+      } else {
+        // Refresh failed, redirect to login
+        this.handleAuthFailure();
+        throw new Error('Authentication failed');
+      }
+    }
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
       throw new Error(error.error || `HTTP error! status: ${response.status}`);
     }
 
     return response.json();
+  }
+
+  private async tryRefreshToken(): Promise<boolean> {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        return false;
+      }
+
+      const response = await this.refreshToken(refreshToken);
+      
+      // Update stored tokens
+      localStorage.setItem('access_token', response.access_token);
+      localStorage.setItem('refresh_token', response.refresh_token);
+      
+      return true;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
+  }
+
+  private handleAuthFailure() {
+    // Clear stored tokens
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    
+    // Redirect to login page
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   }
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
@@ -151,6 +223,10 @@ class ApiClient {
 
   // Admin Image Management
   async uploadImage(file: File): Promise<ImageResponse> {
+    return this.uploadFileWithAuth(file, '/api/admin/images/upload');
+  }
+
+  private async uploadFileWithAuth(file: File, endpoint: string, retryOnAuth: boolean = true): Promise<ImageResponse> {
     const formData = new FormData();
     formData.append('image', file);
 
@@ -160,11 +236,24 @@ class ApiClient {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${this.baseUrl}/api/admin/images/upload`, {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: 'POST',
       headers,
       body: formData,
     });
+
+    // Handle 401 Unauthorized - try to refresh token
+    if (response.status === 401 && retryOnAuth) {
+      const refreshSuccess = await this.tryRefreshToken();
+      if (refreshSuccess) {
+        // Retry the upload with new token
+        return this.uploadFileWithAuth(file, endpoint, false);
+      } else {
+        // Refresh failed, redirect to login
+        this.handleAuthFailure();
+        throw new Error('Authentication failed');
+      }
+    }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
@@ -186,6 +275,55 @@ class ApiClient {
   async deleteImage(id: number): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/api/admin/images/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  // Admin Category Management
+  async listCategories(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string, 
+    active?: boolean, 
+    chartOnly?: boolean
+  ): Promise<CategoryListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (search) params.append('search', search);
+    if (active !== undefined) params.append('active', active.toString());
+    if (chartOnly !== undefined) params.append('chart_only', chartOnly.toString());
+    
+    return this.request<CategoryListResponse>(`/api/admin/categories?${params}`);
+  }
+
+  async createCategory(categoryData: CategoryRequest): Promise<CategoryResponse> {
+    return this.request<CategoryResponse>('/api/admin/categories', {
+      method: 'POST',
+      body: JSON.stringify(categoryData),
+    });
+  }
+
+  async getCategory(id: number): Promise<CategoryResponse> {
+    return this.request<CategoryResponse>(`/api/admin/categories/${id}`);
+  }
+
+  async updateCategory(id: number, categoryData: CategoryRequest): Promise<CategoryResponse> {
+    return this.request<CategoryResponse>(`/api/admin/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(categoryData),
+    });
+  }
+
+  async deleteCategory(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/categories/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleCategoryActive(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/categories/${id}/toggle`, {
+      method: 'PATCH',
     });
   }
 }
