@@ -84,6 +84,50 @@ export interface CategoryListResponse {
   limit: number;
 }
 
+export interface MaterialRequest {
+  name: string;
+}
+
+export interface MaterialResponse {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MaterialListResponse {
+  materials: MaterialResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ColorRequest {
+  name: string;
+  image_id?: number;
+  custom: boolean;
+  material_id: number;
+}
+
+export interface ColorResponse {
+  id: number;
+  name: string;
+  image_id?: number;
+  custom: boolean;
+  material_id: number;
+  created_at: string;
+  updated_at: string;
+  image?: ImageResponse;
+  material?: MaterialResponse;
+}
+
+export interface ColorListResponse {
+  colors: ColorResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -324,6 +368,88 @@ class ApiClient {
   async toggleCategoryActive(id: number): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/api/admin/categories/${id}/toggle`, {
       method: 'PATCH',
+    });
+  }
+
+  // Admin Material Management
+  async listMaterials(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string
+  ): Promise<MaterialListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (search) params.append('search', search);
+    
+    return this.request<MaterialListResponse>(`/api/admin/materials?${params}`);
+  }
+
+  async createMaterial(materialData: MaterialRequest): Promise<MaterialResponse> {
+    return this.request<MaterialResponse>('/api/admin/materials', {
+      method: 'POST',
+      body: JSON.stringify(materialData),
+    });
+  }
+
+  async getMaterial(id: number): Promise<MaterialResponse> {
+    return this.request<MaterialResponse>(`/api/admin/materials/${id}`);
+  }
+
+  async updateMaterial(id: number, materialData: MaterialRequest): Promise<MaterialResponse> {
+    return this.request<MaterialResponse>(`/api/admin/materials/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(materialData),
+    });
+  }
+
+  async deleteMaterial(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/materials/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Admin Color Management
+  async listColors(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string,
+    materialId?: number,
+    custom?: boolean
+  ): Promise<ColorListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (search) params.append('search', search);
+    if (materialId !== undefined) params.append('material_id', materialId.toString());
+    if (custom !== undefined) params.append('custom', custom.toString());
+    
+    return this.request<ColorListResponse>(`/api/admin/colors?${params}`);
+  }
+
+  async createColor(colorData: ColorRequest): Promise<ColorResponse> {
+    return this.request<ColorResponse>('/api/admin/colors', {
+      method: 'POST',
+      body: JSON.stringify(colorData),
+    });
+  }
+
+  async getColor(id: number): Promise<ColorResponse> {
+    return this.request<ColorResponse>(`/api/admin/colors/${id}`);
+  }
+
+  async updateColor(id: number, colorData: ColorRequest): Promise<ColorResponse> {
+    return this.request<ColorResponse>(`/api/admin/colors/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(colorData),
+    });
+  }
+
+  async deleteColor(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/colors/${id}`, {
+      method: 'DELETE',
     });
   }
 }
