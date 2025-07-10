@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider
-          defaultTheme="light"
+          defaultTheme="system"
           storageKey="notsofluffy-ui-theme"
         >
           <AuthProvider>

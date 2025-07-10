@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export default function DashboardPage() {
   const { user, logout, loading } = useAuth();
@@ -35,12 +36,15 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
               <p className="text-muted-foreground">Welcome back, {user.email}!</p>
             </div>
-            <button
-              onClick={logout}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-md transition-colors"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                onClick={logout}
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-md transition-colors"
+              >
+                Logout
+              </button>
+            </div>
           </div>
           
           <div className="mt-8 bg-card shadow rounded-lg p-6 border border-border">

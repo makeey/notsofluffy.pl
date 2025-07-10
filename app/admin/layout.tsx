@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Users, Images, Settings, LogOut } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Users, Images, Settings, LogOut, LayoutDashboard } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -40,7 +41,7 @@ export default function AdminLayout({
     {
       href: '/admin',
       label: 'Dashboard',
-      icon: Settings,
+      icon: LayoutDashboard,
     },
     {
       href: '/admin/users',
@@ -52,6 +53,11 @@ export default function AdminLayout({
       label: 'Images',
       icon: Images,
     },
+    {
+      href: '/admin/settings',
+      label: 'Settings',
+      icon: Settings,
+    },
   ];
 
   return (
@@ -60,8 +66,13 @@ export default function AdminLayout({
         {/* Sidebar */}
         <div className="w-64 bg-card shadow-sm border-r border-border">
           <div className="p-6">
-            <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
-            <p className="text-sm text-muted-foreground mt-1">Welcome, {user.email}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
+                <p className="text-sm text-muted-foreground mt-1">Welcome, {user.email}</p>
+              </div>
+              <ThemeToggle />
+            </div>
           </div>
           
           <nav className="mt-6">
