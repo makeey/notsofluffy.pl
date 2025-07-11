@@ -1,5 +1,5 @@
 "use client";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import {
   Dialog,
   DialogBackdrop,
@@ -21,87 +21,76 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { apiClient } from "@/lib/api";
+import { Category } from "@/lib/api";
 
-const navigation = {
-  categories: [
-    {
-      name: "Chart",
-      featured: [
-        {
-          name: "New Arrivals",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-category-01.jpg",
-          imageAlt:
-            "Models sitting back to back, wearing Basic Tee in black and bone.",
-        },
-        {
-          name: "Basic Tees",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-category-02.jpg",
-          imageAlt:
-            "Close up of Basic Tee fall bundle with off-white, ochre, olive, and black tees.",
-        },
-        {
-          name: "Accessories",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-category-03.jpg",
-          imageAlt:
-            "Model wearing minimalist watch with black wristband and white watch face.",
-        },
-        {
-          name: "Carry",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-category-04.jpg",
-          imageAlt:
-            "Model opening tan leather long wallet with credit card pockets and cash pouch.",
-        },
-      ],
-    },
-    {
-      name: "Inny",
-      featured: [
-        {
-          name: "New Arrivals",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-01-men-category-01.jpg",
-          imageAlt:
-            "Hats and sweaters on wood shelves next to various colors of t-shirts on hangers.",
-        },
-        {
-          name: "Basic Tees",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-01-men-category-02.jpg",
-          imageAlt: "Model wearing light heather gray t-shirt.",
-        },
-        {
-          name: "Accessories",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-01-men-category-03.jpg",
-          imageAlt:
-            "Grey 6-panel baseball hat with black brim, black mountain graphic on front, and light heather gray body.",
-        },
-        {
-          name: "Carry",
-          href: "#",
-          imageSrc:
-            "https://tailwindcss.com/plus-assets/img/ecommerce-images/mega-menu-01-men-category-04.jpg",
-          imageAlt:
-            "Model putting folded cash into slim card holder olive leather wallet with hand stitching.",
-        },
-      ],
-    },
-  ],
-  pages: [],
+// Transform API categories to navigation structure
+const transformCategoriesToNavigation = (categories: Category[]) => {
+  const chartyCategories = categories.filter((cat) => cat.chart_only);
+  const innyCategories = categories.filter((cat) => !cat.chart_only);
+
+  const transformToFeatured = (cats: Category[]) =>
+    cats.map((cat) => ({
+      name: cat.name,
+      href: `/products?category=${cat.slug}`,
+      imageSrc: cat.image
+        ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/${cat.image.path}`
+        : "",
+      imageAlt: cat.name,
+    }));
+
+  return {
+    categories: [
+      {
+        name: "Charty",
+        featured: transformToFeatured(chartyCategories),
+      },
+      {
+        name: "Inny rasy",
+        featured: transformToFeatured(innyCategories),
+      },
+    ],
+    pages: [],
+  };
 };
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [navigation, setNavigation] = useState({
+    categories: [],
+    pages: [],
+  });
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await apiClient.getPublicCategories();
+        setCategories(response.categories);
+        setNavigation(transformCategoriesToNavigation(response.categories));
+        setError(null);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to load categories",
+        );
+        // Fallback to empty navigation
+        setNavigation({
+          categories: [
+            { name: "Charty", featured: [] },
+            { name: "Inny rasy", featured: [] },
+          ],
+          pages: [],
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   return (
     <>
       <Dialog
@@ -151,31 +140,47 @@ export function Header() {
                     className="space-y-12 px-4 py-6"
                   >
                     <div className="grid grid-cols-2 gap-x-4 gap-y-10">
-                      {category.featured.map((item) => (
-                        <div key={item.name} className="group relative">
-                          <img
-                            alt={item.imageAlt}
-                            src={item.imageSrc}
-                            className="aspect-square w-full rounded-md bg-gray-100 object-cover group-hover:opacity-75"
-                          />
-                          <a
-                            href={item.href}
-                            className="mt-6 block text-sm font-medium text-gray-900"
-                          >
-                            <span
-                              aria-hidden="true"
-                              className="absolute inset-0 z-10"
-                            />
-                            {item.name}
-                          </a>
-                          <p
-                            aria-hidden="true"
-                            className="mt-1 text-sm text-gray-500"
-                          >
-                            Shop now
-                          </p>
+                      {loading && (
+                        <div className="col-span-2 p-4 text-center text-sm text-gray-600">
+                          Ładowanie kategorii...
                         </div>
-                      ))}
+                      )}
+                      {error && (
+                        <div className="col-span-2 p-4 text-center text-sm text-red-600">
+                          Błąd: {error}
+                        </div>
+                      )}
+                      {!loading && !error && category.featured.length === 0 && (
+                        <div className="col-span-2 p-4 text-center text-sm text-gray-600">
+                          Brak dostępnych kategorii
+                        </div>
+                      )}
+                      {!loading &&
+                        category.featured.map((item) => (
+                          <div key={item.name} className="group relative">
+                            <img
+                              alt={item.imageAlt}
+                              src={item.imageSrc}
+                              className="aspect-square w-full rounded-md bg-gray-100 object-cover group-hover:opacity-75"
+                            />
+                            <a
+                              href={item.href}
+                              className="mt-6 block text-sm font-medium text-gray-900"
+                            >
+                              <span
+                                aria-hidden="true"
+                                className="absolute inset-0 z-10"
+                              />
+                              {item.name}
+                            </a>
+                            <p
+                              aria-hidden="true"
+                              className="mt-1 text-sm text-gray-500"
+                            >
+                              Zaprasamy do zakupu
+                            </p>
+                          </div>
+                        ))}
                     </div>
                   </TabPanel>
                 ))}
@@ -217,11 +222,11 @@ export function Header() {
                   <div className="flex h-16 items-center justify-between">
                     {/* Logo (lg+) */}
                     <div className="hidden lg:flex lg:flex-1 lg:items-center">
-                      <a href="#">
-                        <span className="sr-only">Your Company</span>
+                      <a href="/">
+                        <span className="sr-only">Not so fluffy</span>
                         <img
                           alt=""
-                          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=white"
+                          src="/images/logo2.svg"
                           className="h-8 w-auto"
                         />
                       </a>
@@ -254,34 +259,52 @@ export function Header() {
                                 <div className="relative bg-white">
                                   <div className="mx-auto max-w-7xl px-8">
                                     <div className="grid grid-cols-4 gap-x-8 gap-y-10 py-16">
-                                      {category.featured.map((item) => (
-                                        <div
-                                          key={item.name}
-                                          className="group relative"
-                                        >
-                                          <img
-                                            alt={item.imageAlt}
-                                            src={item.imageSrc}
-                                            className="aspect-square w-full rounded-md bg-gray-100 object-cover group-hover:opacity-75"
-                                          />
-                                          <a
-                                            href={item.href}
-                                            className="mt-4 block font-medium text-gray-900"
-                                          >
-                                            <span
-                                              aria-hidden="true"
-                                              className="absolute inset-0 z-10"
-                                            />
-                                            {item.name}
-                                          </a>
-                                          <p
-                                            aria-hidden="true"
-                                            className="mt-1"
-                                          >
-                                            Shop now
-                                          </p>
+                                      {loading && (
+                                        <div className="col-span-4 p-4 text-center text-sm text-gray-600">
+                                          Ładowanie kategorii...
                                         </div>
-                                      ))}
+                                      )}
+                                      {error && (
+                                        <div className="col-span-4 p-4 text-center text-sm text-red-600">
+                                          Błąd: {error}
+                                        </div>
+                                      )}
+                                      {!loading &&
+                                        !error &&
+                                        category.featured.length === 0 && (
+                                          <div className="col-span-4 p-4 text-center text-sm text-gray-600">
+                                            Brak dostępnych kategorii
+                                          </div>
+                                        )}
+                                      {!loading &&
+                                        category.featured.map((item) => (
+                                          <div
+                                            key={item.name}
+                                            className="group relative"
+                                          >
+                                            <img
+                                              alt={item.imageAlt}
+                                              src={item.imageSrc}
+                                              className="aspect-square w-full rounded-md bg-gray-100 object-cover group-hover:opacity-75"
+                                            />
+                                            <a
+                                              href={item.href}
+                                              className="mt-4 block font-medium text-gray-900"
+                                            >
+                                              <span
+                                                aria-hidden="true"
+                                                className="absolute inset-0 z-10"
+                                              />
+                                              {item.name}
+                                            </a>
+                                            <p
+                                              aria-hidden="true"
+                                              className="mt-1 text-gray-500"
+                                            >
+                                              Zaprasamy do zakupu
+                                            </p>
+                                          </div>
+                                        ))}
                                     </div>
                                   </div>
                                 </div>
@@ -313,8 +336,8 @@ export function Header() {
                       </button>
 
                       {/* Search */}
-                      <a href="#" className="ml-2 p-2 text-white">
-                        <span className="sr-only">Search</span>
+                      <a href="/search" className="ml-2 p-2 text-white">
+                        <span className="sr-only">Wyszukaj</span>
                         <MagnifyingGlassIcon
                           aria-hidden="true"
                           className="size-6"
@@ -323,43 +346,43 @@ export function Header() {
                     </div>
 
                     {/* Logo (lg-) */}
-                    <a href="#" className="lg:hidden">
-                      <span className="sr-only">Your Company</span>
+                    <a href="/" className="lg:hidden">
+                      <span className="sr-only">Not so fluffy</span>
                       <img
                         alt=""
-                        src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=white"
+                        src="/images/logo2.svg"
                         className="h-8 w-auto"
                       />
                     </a>
 
                     <div className="flex flex-1 items-center justify-end">
                       <a
-                        href="#"
+                        href="/search"
                         className="hidden text-sm font-medium text-white lg:block"
                       >
-                        Search
+                        Wyszukaj
                       </a>
 
                       <div className="flex items-center lg:ml-8">
                         {/* Help */}
-                        <a href="#" className="p-2 text-white lg:hidden">
-                          <span className="sr-only">Help</span>
+                        <a href="/kontakt" className="p-2 text-white lg:hidden">
+                          <span className="sr-only">Pomoc</span>
                           <QuestionMarkCircleIcon
                             aria-hidden="true"
                             className="size-6"
                           />
                         </a>
                         <a
-                          href="#"
+                          href="/kontakt"
                           className="hidden text-sm font-medium text-white lg:block"
                         >
-                          Help
+                          Pomoc
                         </a>
 
                         {/* Cart */}
                         <div className="ml-4 flow-root lg:ml-8">
                           <a
-                            href="#"
+                            href="/koszyk"
                             className="group -m-2 flex items-center p-2"
                           >
                             <ShoppingBagIcon
@@ -370,7 +393,7 @@ export function Header() {
                               0
                             </span>
                             <span className="sr-only">
-                              items in cart, view bag
+                              produkty w koszyku, pokaż koszyk
                             </span>
                           </a>
                         </div>
