@@ -130,7 +130,8 @@ export default function CartPage() {
               >
                 {cart.items.map((item) => {
                   const isUpdating = updatingItems.has(item.id);
-                  const mainImageUrl = item.variant.images && item.variant.images.length > 0 
+                  // Priority: variant images first, then product main image
+                  const mainImageUrl = item.variant?.images && item.variant.images.length > 0 
                     ? `${process.env.NEXT_PUBLIC_API_URL}/${item.variant.images[0].path}`
                     : `${process.env.NEXT_PUBLIC_API_URL}/${item.product.main_image.path}`;
 
@@ -157,6 +158,11 @@ export default function CartPage() {
                                 </Link>
                               </h3>
                             </div>
+                            {item.variant?.name && (
+                              <p className="mt-1 text-sm font-medium text-gray-800">
+                                {item.variant.name}
+                              </p>
+                            )}
                             <div className="mt-1 flex text-sm">
                               <p className="text-gray-500">
                                 {item.variant?.color?.name || 'No color'}
