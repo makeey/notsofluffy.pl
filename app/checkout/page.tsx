@@ -24,6 +24,7 @@ export default function CheckoutPage() {
 
   // Form state
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [shippingAddress, setShippingAddress] = useState<AddressRequest>({
     first_name: "",
     last_name: "",
@@ -71,6 +72,11 @@ export default function CheckoutPage() {
       newErrors.email = "Please enter a valid email address";
     }
 
+    // Phone validation
+    if (!phone) {
+      newErrors.phone = "Phone number is required";
+    }
+
     // Shipping address validation
     if (!shippingAddress.first_name) newErrors.shipping_first_name = "First name is required";
     if (!shippingAddress.last_name) newErrors.shipping_last_name = "Last name is required";
@@ -79,6 +85,7 @@ export default function CheckoutPage() {
     if (!shippingAddress.state_province) newErrors.shipping_state_province = "State/Province is required";
     if (!shippingAddress.postal_code) newErrors.shipping_postal_code = "Postal code is required";
     if (!shippingAddress.country) newErrors.shipping_country = "Country is required";
+    if (!shippingAddress.phone) newErrors.shipping_phone = "Phone number is required";
 
     // Billing address validation (if different from shipping)
     if (!sameAsShipping) {
@@ -89,6 +96,7 @@ export default function CheckoutPage() {
       if (!billingAddress.state_province) newErrors.billing_state_province = "State/Province is required";
       if (!billingAddress.postal_code) newErrors.billing_postal_code = "Postal code is required";
       if (!billingAddress.country) newErrors.billing_country = "Country is required";
+      if (!billingAddress.phone) newErrors.billing_phone = "Phone number is required";
     }
 
     setErrors(newErrors);
@@ -113,6 +121,7 @@ export default function CheckoutPage() {
     try {
       const orderRequest: OrderRequest = {
         email,
+        phone,
         shipping_address: shippingAddress,
         billing_address: sameAsShipping ? shippingAddress : billingAddress,
         same_as_shipping: sameAsShipping,
@@ -343,28 +352,55 @@ export default function CheckoutPage() {
                 Contact information
               </h2>
 
-              <div className="mt-6">
-                <label
-                  htmlFor="email-address"
-                  className="block text-sm/6 font-medium text-gray-700"
-                >
-                  Email address
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="email-address"
-                    name="email-address"
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
-                      errors.email ? 'outline-red-500' : 'outline-gray-300'
-                    } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
-                  />
-                  {errors.email && (
-                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                  )}
+              <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="email-address"
+                    className="block text-sm/6 font-medium text-gray-700"
+                  >
+                    Email address
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="email-address"
+                      name="email-address"
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
+                        errors.email ? 'outline-red-500' : 'outline-gray-300'
+                      } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
+                    />
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="phone-number"
+                    className="block text-sm/6 font-medium text-gray-700"
+                  >
+                    Phone number
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="phone-number"
+                      name="phone-number"
+                      type="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
+                        errors.phone ? 'outline-red-500' : 'outline-gray-300'
+                      } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
+                    />
+                    {errors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </section>
@@ -562,6 +598,31 @@ export default function CheckoutPage() {
                     />
                     {errors.shipping_postal_code && (
                       <p className="mt-1 text-sm text-red-600">{errors.shipping_postal_code}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="shipping-phone"
+                    className="block text-sm/6 font-medium text-gray-700"
+                  >
+                    Phone number
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="shipping-phone"
+                      name="shipping-phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={shippingAddress.phone}
+                      onChange={(e) => updateShippingAddress('phone', e.target.value)}
+                      className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
+                        errors.shipping_phone ? 'outline-red-500' : 'outline-gray-300'
+                      } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
+                    />
+                    {errors.shipping_phone && (
+                      <p className="mt-1 text-sm text-red-600">{errors.shipping_phone}</p>
                     )}
                   </div>
                 </div>
@@ -803,6 +864,31 @@ export default function CheckoutPage() {
                       />
                       {errors.billing_postal_code && (
                         <p className="mt-1 text-sm text-red-600">{errors.billing_postal_code}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="billing-phone"
+                      className="block text-sm/6 font-medium text-gray-700"
+                    >
+                      Phone number
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        id="billing-phone"
+                        name="billing-phone"
+                        type="tel"
+                        autoComplete="tel"
+                        value={billingAddress.phone}
+                        onChange={(e) => updateBillingAddress('phone', e.target.value)}
+                        className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
+                          errors.billing_phone ? 'outline-red-500' : 'outline-gray-300'
+                        } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
+                      />
+                      {errors.billing_phone && (
+                        <p className="mt-1 text-sm text-red-600">{errors.billing_phone}</p>
                       )}
                     </div>
                   </div>

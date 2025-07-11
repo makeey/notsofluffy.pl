@@ -308,11 +308,12 @@ export interface AddressRequest {
   state_province: string;
   postal_code: string;
   country: string;
-  phone?: string;
+  phone: string;
 }
 
 export interface OrderRequest {
   email: string;
+  phone: string;
   shipping_address: AddressRequest;
   billing_address: AddressRequest;
   same_as_shipping: boolean;
@@ -332,7 +333,7 @@ export interface ShippingAddressResponse {
   state_province: string;
   postal_code: string;
   country: string;
-  phone?: string;
+  phone: string;
   created_at: string;
 }
 
@@ -348,7 +349,7 @@ export interface BillingAddressResponse {
   state_province: string;
   postal_code: string;
   country: string;
-  phone?: string;
+  phone: string;
   same_as_shipping: boolean;
   created_at: string;
 }
@@ -388,6 +389,7 @@ export interface OrderResponse {
   user_id?: number;
   session_id?: string;
   email: string;
+  phone: string;
   status: string;
   total_amount: number;
   subtotal: number;

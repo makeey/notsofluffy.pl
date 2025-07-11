@@ -242,6 +242,10 @@ export default function OrderDetailsPage() {
                   <Mail className="w-4 h-4" />
                   <span className="text-sm">{order.email}</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  <span className="text-sm">{order.phone}</span>
+                </div>
                 {order.user_id && (
                   <div className="text-sm text-muted-foreground">
                     User ID: {order.user_id}

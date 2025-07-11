@@ -199,6 +199,7 @@ export default function OrdersPage() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{order.email}</div>
+                      <div className="text-sm text-muted-foreground">{order.phone}</div>
                       {order.user_id && (
                         <div className="text-sm text-muted-foreground">
                           User ID: {order.user_id}
