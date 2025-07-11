@@ -178,6 +178,7 @@ export interface ProductResponse {
   material_id?: number;
   main_image_id: number;
   category_id?: number;
+  min_price: number;
   created_at: string;
   updated_at: string;
   material?: MaterialResponse;
@@ -764,6 +765,29 @@ class ApiClient {
   // Public API methods (no authentication required)
   async getPublicCategories(): Promise<CategoryListResponse> {
     const response = await fetch(`${this.baseUrl}/api/categories`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getPublicProducts(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    category?: string[];
+  } = {}): Promise<ProductListResponse> {
+    const searchParams = new URLSearchParams();
+    
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+    if (params.search) searchParams.append('search', params.search);
+    if (params.category && params.category.length > 0) {
+      params.category.forEach(cat => searchParams.append('category', cat));
+    }
+    
+    const url = `${this.baseUrl}/api/products${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }

@@ -1,5 +1,6 @@
 "use client";
 import { Fragment, useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Dialog,
   DialogBackdrop,
@@ -55,10 +56,20 @@ const transformCategoriesToNavigation = (categories: Category[]) => {
 };
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [navigation, setNavigation] = useState({
+  const [navigation, setNavigation] = useState<{
+    categories: {
+      name: string;
+      featured: {
+        name: string;
+        href: string;
+        imageSrc: string;
+        imageAlt: string;
+      }[];
+    }[];
+    pages: never[];
+  }>({
     categories: [],
     pages: [],
   });
@@ -68,7 +79,6 @@ export function Header() {
       try {
         setLoading(true);
         const response = await apiClient.getPublicCategories();
-        setCategories(response.categories);
         setNavigation(transformCategoriesToNavigation(response.categories));
         setError(null);
       } catch (error) {
@@ -188,16 +198,7 @@ export function Header() {
             </TabGroup>
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-              {navigation.pages.map((page) => (
-                <div key={page.name} className="flow-root">
-                  <a
-                    href={page.href}
-                    className="-m-2 block p-2 font-medium text-gray-900"
-                  >
-                    {page.name}
-                  </a>
-                </div>
-              ))}
+              {/* Additional navigation items can be added here */}
             </div>
           </DialogPanel>
         </div>
@@ -222,14 +223,14 @@ export function Header() {
                   <div className="flex h-16 items-center justify-between">
                     {/* Logo (lg+) */}
                     <div className="hidden lg:flex lg:flex-1 lg:items-center">
-                      <a href="/">
+                      <Link href="/">
                         <span className="sr-only">Not so fluffy</span>
                         <img
                           alt=""
                           src="/images/logo2.svg"
                           className="h-8 w-auto"
                         />
-                      </a>
+                      </Link>
                     </div>
 
                     <div className="hidden h-full lg:flex">
@@ -311,15 +312,6 @@ export function Header() {
                               </PopoverPanel>
                             </Popover>
                           ))}
-                          {navigation.pages.map((page) => (
-                            <a
-                              key={page.name}
-                              href={page.href}
-                              className="flex items-center text-sm font-medium text-white"
-                            >
-                              {page.name}
-                            </a>
-                          ))}
                         </div>
                       </PopoverGroup>
                     </div>
@@ -346,14 +338,14 @@ export function Header() {
                     </div>
 
                     {/* Logo (lg-) */}
-                    <a href="/" className="lg:hidden">
+                    <Link href="/" className="lg:hidden">
                       <span className="sr-only">Not so fluffy</span>
                       <img
                         alt=""
                         src="/images/logo2.svg"
                         className="h-8 w-auto"
                       />
-                    </a>
+                    </Link>
 
                     <div className="flex flex-1 items-center justify-end">
                       <a
