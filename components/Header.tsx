@@ -1,6 +1,7 @@
 "use client";
 import { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
+import { useCart } from "@/contexts/CartContext";
 import {
   Dialog,
   DialogBackdrop,
@@ -58,6 +59,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { cartCount } = useCart();
   const [navigation, setNavigation] = useState<{
     categories: {
       name: string;
@@ -173,7 +175,7 @@ export function Header() {
                               src={item.imageSrc}
                               className="aspect-square w-full rounded-md bg-gray-100 object-cover group-hover:opacity-75"
                             />
-                            <a
+                            <Link
                               href={item.href}
                               className="mt-6 block text-sm font-medium text-gray-900"
                             >
@@ -182,7 +184,7 @@ export function Header() {
                                 className="absolute inset-0 z-10"
                               />
                               {item.name}
-                            </a>
+                            </Link>
                             <p
                               aria-hidden="true"
                               className="mt-1 text-sm text-gray-500"
@@ -288,7 +290,7 @@ export function Header() {
                                               src={item.imageSrc}
                                               className="aspect-square w-full rounded-md bg-gray-100 object-cover group-hover:opacity-75"
                                             />
-                                            <a
+                                            <Link
                                               href={item.href}
                                               className="mt-4 block font-medium text-gray-900"
                                             >
@@ -297,7 +299,7 @@ export function Header() {
                                                 className="absolute inset-0 z-10"
                                               />
                                               {item.name}
-                                            </a>
+                                            </Link>
                                             <p
                                               aria-hidden="true"
                                               className="mt-1 text-gray-500"
@@ -328,13 +330,13 @@ export function Header() {
                       </button>
 
                       {/* Search */}
-                      <a href="/search" className="ml-2 p-2 text-white">
+                      <Link href="/search" className="ml-2 p-2 text-white">
                         <span className="sr-only">Wyszukaj</span>
                         <MagnifyingGlassIcon
                           aria-hidden="true"
                           className="size-6"
                         />
-                      </a>
+                      </Link>
                     </div>
 
                     {/* Logo (lg-) */}
@@ -348,32 +350,32 @@ export function Header() {
                     </Link>
 
                     <div className="flex flex-1 items-center justify-end">
-                      <a
+                      <Link
                         href="/search"
                         className="hidden text-sm font-medium text-white lg:block"
                       >
                         Wyszukaj
-                      </a>
+                      </Link>
 
                       <div className="flex items-center lg:ml-8">
                         {/* Help */}
-                        <a href="/kontakt" className="p-2 text-white lg:hidden">
+                        <Link href="/kontakt" className="p-2 text-white lg:hidden">
                           <span className="sr-only">Pomoc</span>
                           <QuestionMarkCircleIcon
                             aria-hidden="true"
                             className="size-6"
                           />
-                        </a>
-                        <a
+                        </Link>
+                        <Link
                           href="/kontakt"
                           className="hidden text-sm font-medium text-white lg:block"
                         >
                           Pomoc
-                        </a>
+                        </Link>
 
                         {/* Cart */}
                         <div className="ml-4 flow-root lg:ml-8">
-                          <a
+                          <Link
                             href="/koszyk"
                             className="group -m-2 flex items-center p-2"
                           >
@@ -382,12 +384,12 @@ export function Header() {
                               className="size-6 shrink-0 text-white"
                             />
                             <span className="ml-2 text-sm font-medium text-white">
-                              0
+                              {cartCount}
                             </span>
                             <span className="sr-only">
                               produkty w koszyku, pokaż koszyk
                             </span>
-                          </a>
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -405,12 +407,12 @@ export function Header() {
             Pewnie już jesteś przygotowany na zimę...
             <br /> A twój pies?
           </p>
-          <a
+          <Link
             href="/products"
             className="mt-8 inline-block rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
           >
             Shop New Arrivals
-          </a>
+          </Link>
         </div>
       </div>
     </>

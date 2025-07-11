@@ -10,8 +10,9 @@ import type {
 } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 interface ProductDetailData {
   product: ProductResponse;
@@ -32,6 +33,10 @@ export default function ProductDetailPage() {
   const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [currentImages, setCurrentImages] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
+  
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -111,7 +116,46 @@ export default function ProductDetailPage() {
     return Math.round(price * 100) / 100; // Round to 2 decimal places
   };
 
-  const isAddToCartEnabled = selectedVariant && selectedSize;
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1 && newQuantity <= 99) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const incrementQuantity = () => {
+    handleQuantityChange(quantity + 1);
+  };
+
+  const decrementQuantity = () => {
+    handleQuantityChange(quantity - 1);
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedVariant || !selectedSize || !data) {
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      await addToCart({
+        product_id: data.product.id,
+        variant_id: selectedVariant.id,
+        size_id: selectedSize.id,
+        quantity: quantity,
+        additional_service_ids: selectedServices,
+      });
+      
+      // Show success message (you could use a toast here)
+      alert('Item added to cart successfully!');
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      alert('Failed to add item to cart. Please try again.');
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const isAddToCartEnabled = selectedVariant && selectedSize && !addingToCart;
 
   if (loading) {
     return (
@@ -352,6 +396,35 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {/* Quantity Selector */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Quantity</h3>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={decrementQuantity}
+                  disabled={quantity <= 1}
+                  className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <MinusIcon className="h-4 w-4" />
+                </button>
+                <input
+                  type="number"
+                  min="1"
+                  max="99"
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                  className="w-20 text-center border border-gray-300 rounded-md py-2 px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <button
+                  onClick={incrementQuantity}
+                  disabled={quantity >= 99}
+                  className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
             {/* Price and Add to Cart */}
             <div className="border-t pt-6">
               <div className="flex items-center justify-between mb-4">
@@ -364,6 +437,7 @@ export default function ProductDetailPage() {
               </div>
 
               <button
+                onClick={handleAddToCart}
                 disabled={!isAddToCartEnabled}
                 className={`w-full py-3 px-6 rounded-lg font-medium transition-colors ${
                   isAddToCartEnabled
@@ -371,7 +445,12 @@ export default function ProductDetailPage() {
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
-                {isAddToCartEnabled ? "Add to Cart" : "Select Size to Continue"}
+                {addingToCart 
+                  ? "Adding to Cart..." 
+                  : isAddToCartEnabled 
+                    ? "Add to Cart" 
+                    : "Select Size to Continue"
+                }
               </button>
 
               {!selectedVariant && (

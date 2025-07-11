@@ -258,6 +258,45 @@ export interface ProductVariantListResponse {
   limit: number;
 }
 
+// Cart interfaces
+export interface CartItemRequest {
+  product_id: number;
+  variant_id: number;
+  size_id: number;
+  quantity: number;
+  additional_service_ids: number[];
+}
+
+export interface CartItemUpdateRequest {
+  quantity: number;
+}
+
+export interface CartItemResponse {
+  id: number;
+  product_id: number;
+  product: ProductResponse;
+  variant_id: number;
+  variant: ProductVariantResponse;
+  size_id: number;
+  size: SizeResponse;
+  quantity: number;
+  price_per_item: number;
+  total_price: number;
+  additional_services: AdditionalServiceResponse[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CartResponse {
+  items: CartItemResponse[];
+  total_items: number;
+  total_price: number;
+}
+
+export interface CartCountResponse {
+  count: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -800,6 +839,83 @@ class ApiClient {
     sizes: SizeResponse[];
   }> {
     const response = await fetch(`${this.baseUrl}/api/products/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Cart API methods
+  async getCart(): Promise<CartResponse> {
+    const response = await fetch(`${this.baseUrl}/api/cart`, {
+      credentials: 'include', // Include cookies for session
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async addToCart(item: CartItemRequest): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/api/cart/add`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies for session
+      body: JSON.stringify(item),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async updateCartItem(id: number, update: CartItemUpdateRequest): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/api/cart/update/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies for session
+      body: JSON.stringify(update),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async removeFromCart(id: number): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/api/cart/remove/${id}`, {
+      method: 'DELETE',
+      credentials: 'include', // Include cookies for session
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async clearCart(): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/api/cart/clear`, {
+      method: 'POST',
+      credentials: 'include', // Include cookies for session
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getCartCount(): Promise<CartCountResponse> {
+    const response = await fetch(`${this.baseUrl}/api/cart/count`, {
+      credentials: 'include', // Include cookies for session
+    });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
