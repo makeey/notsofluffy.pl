@@ -297,6 +297,123 @@ export interface CartCountResponse {
   count: number;
 }
 
+// Order interfaces
+export interface AddressRequest {
+  first_name: string;
+  last_name: string;
+  company?: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state_province: string;
+  postal_code: string;
+  country: string;
+  phone?: string;
+}
+
+export interface OrderRequest {
+  email: string;
+  shipping_address: AddressRequest;
+  billing_address: AddressRequest;
+  same_as_shipping: boolean;
+  payment_method?: string;
+  notes?: string;
+}
+
+export interface ShippingAddressResponse {
+  id: number;
+  order_id: number;
+  first_name: string;
+  last_name: string;
+  company?: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state_province: string;
+  postal_code: string;
+  country: string;
+  phone?: string;
+  created_at: string;
+}
+
+export interface BillingAddressResponse {
+  id: number;
+  order_id: number;
+  first_name: string;
+  last_name: string;
+  company?: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state_province: string;
+  postal_code: string;
+  country: string;
+  phone?: string;
+  same_as_shipping: boolean;
+  created_at: string;
+}
+
+export interface OrderItemServiceResponse {
+  id: number;
+  order_item_id: number;
+  service_id: number;
+  service_name: string;
+  service_description?: string;
+  service_price: number;
+  created_at: string;
+}
+
+export interface OrderItemResponse {
+  id: number;
+  order_id: number;
+  product_id: number;
+  product_name: string;
+  product_description?: string;
+  variant_id: number;
+  variant_name: string;
+  variant_color_name?: string;
+  variant_color_custom: boolean;
+  size_id: number;
+  size_name: string;
+  size_dimensions?: { [key: string]: number };
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  services?: OrderItemServiceResponse[];
+  created_at: string;
+}
+
+export interface OrderResponse {
+  id: number;
+  user_id?: number;
+  session_id?: string;
+  email: string;
+  status: string;
+  total_amount: number;
+  subtotal: number;
+  shipping_cost: number;
+  tax_amount: number;
+  payment_method?: string;
+  payment_status: string;
+  notes?: string;
+  shipping_address?: ShippingAddressResponse;
+  billing_address?: BillingAddressResponse;
+  items?: OrderItemResponse[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderListResponse {
+  orders: OrderResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface OrderStatusUpdateRequest {
+  status: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -920,6 +1037,76 @@ class ApiClient {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     return response.json();
+  }
+
+  // Order API methods
+  async createOrder(order: OrderRequest): Promise<OrderResponse> {
+    const response = await fetch(`${this.baseUrl}/api/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies for session
+      body: JSON.stringify(order),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getOrder(id: number): Promise<OrderResponse> {
+    const response = await fetch(`${this.baseUrl}/api/orders/${id}`, {
+      credentials: 'include', // Include cookies for session
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getUserOrders(params: {
+    page?: number;
+    limit?: number;
+  } = {}): Promise<OrderListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+    
+    const url = `${this.baseUrl}/api/user/orders${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    return this.request<OrderListResponse>(url);
+  }
+
+  // Admin Order Management
+  async listOrders(params: {
+    page?: number;
+    limit?: number;
+    email?: string;
+    status?: string;
+  } = {}): Promise<OrderListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+    if (params.email) searchParams.append('email', params.email);
+    if (params.status) searchParams.append('status', params.status);
+    
+    const endpoint = `/api/admin/orders${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    return this.request<OrderListResponse>(endpoint);
+  }
+
+  async updateOrderStatus(id: number, statusUpdate: OrderStatusUpdateRequest): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/orders/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(statusUpdate),
+    });
+  }
+
+  async deleteOrder(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/orders/${id}`, {
+      method: 'DELETE',
+    });
   }
 }
 
