@@ -793,6 +793,18 @@ class ApiClient {
     }
     return response.json();
   }
+
+  async getPublicProduct(id: number): Promise<{
+    product: ProductResponse;
+    variants: ProductVariantResponse[];
+    sizes: SizeResponse[];
+  }> {
+    const response = await fetch(`${this.baseUrl}/api/products/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
