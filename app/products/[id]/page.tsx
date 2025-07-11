@@ -260,10 +260,11 @@ export default function ProductDetailPage() {
                     >
                       <div>
                         <p className="font-medium text-gray-900">{size.name}</p>
-                        <p className="text-sm text-gray-500">
-                          Dimensions: {size.a}×{size.b}×{size.c}
-                        </p>
-                        <p className="text-sm font-medium text-gray-900">
+                        <div className="text-sm text-gray-500 space-y-1">
+                          <p>A: {size.a}, B: {size.b}, C: {size.c}</p>
+                          <p>D: {size.d}, E: {size.e}, F: {size.f}</p>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 mt-1">
                           ${size.base_price}
                         </p>
                       </div>
