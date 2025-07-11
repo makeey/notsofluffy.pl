@@ -164,9 +164,9 @@ export default function CategoriesPage() {
                 <TableRow key={category.id}>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>
-                    <code className="bg-gray-100 px-2 py-1 rounded text-sm">
+                    <Badge variant="outline" className="font-mono">
                       {category.slug}
-                    </code>
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     {category.image ? (

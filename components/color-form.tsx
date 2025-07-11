@@ -46,7 +46,6 @@ export function ColorForm({ color, onSuccess }: ColorFormProps) {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
     reset,
   } = useForm<ColorFormData>({
     resolver: zodResolver(colorSchema),

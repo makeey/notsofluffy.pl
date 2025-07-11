@@ -128,6 +128,100 @@ export interface ColorListResponse {
   limit: number;
 }
 
+export interface AdditionalServiceRequest {
+  name: string;
+  description: string;
+  price: number;
+  image_ids: number[];
+}
+
+export interface AdditionalServiceResponse {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
+  images: ImageResponse[];
+}
+
+export interface AdditionalServiceListResponse {
+  additional_services: AdditionalServiceResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ProductRequest {
+  name: string;
+  short_description: string;
+  description: string;
+  material_id?: number;
+  main_image_id: number;
+  category_id?: number;
+  image_ids: number[];
+  additional_service_ids: number[];
+}
+
+export interface ProductResponse {
+  id: number;
+  name: string;
+  short_description: string;
+  description: string;
+  material_id?: number;
+  main_image_id: number;
+  category_id?: number;
+  created_at: string;
+  updated_at: string;
+  material?: MaterialResponse;
+  main_image: ImageResponse;
+  category?: CategoryResponse;
+  images: ImageResponse[];
+  additional_services: AdditionalServiceResponse[];
+}
+
+export interface ProductListResponse {
+  products: ProductResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface SizeRequest {
+  name: string;
+  product_id: number;
+  base_price: number;
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  e: number;
+  f: number;
+}
+
+export interface SizeResponse {
+  id: number;
+  name: string;
+  product_id: number;
+  base_price: number;
+  a: number;
+  b: number;
+  c: number;
+  d: number;
+  e: number;
+  f: number;
+  created_at: string;
+  updated_at: string;
+  product: ProductResponse;
+}
+
+export interface SizeListResponse {
+  sizes: SizeResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -449,6 +543,136 @@ class ApiClient {
 
   async deleteColor(id: number): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/api/admin/colors/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Admin Additional Service Management
+  async listAdditionalServices(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string,
+    minPrice?: number,
+    maxPrice?: number
+  ): Promise<AdditionalServiceListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (search) params.append('search', search);
+    if (minPrice !== undefined) params.append('min_price', minPrice.toString());
+    if (maxPrice !== undefined) params.append('max_price', maxPrice.toString());
+    
+    return this.request<AdditionalServiceListResponse>(`/api/admin/additional-services?${params}`);
+  }
+
+  async createAdditionalService(serviceData: AdditionalServiceRequest): Promise<AdditionalServiceResponse> {
+    return this.request<AdditionalServiceResponse>('/api/admin/additional-services', {
+      method: 'POST',
+      body: JSON.stringify(serviceData),
+    });
+  }
+
+  async getAdditionalService(id: number): Promise<AdditionalServiceResponse> {
+    return this.request<AdditionalServiceResponse>(`/api/admin/additional-services/${id}`);
+  }
+
+  async updateAdditionalService(id: number, serviceData: AdditionalServiceRequest): Promise<AdditionalServiceResponse> {
+    return this.request<AdditionalServiceResponse>(`/api/admin/additional-services/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(serviceData),
+    });
+  }
+
+  async deleteAdditionalService(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/additional-services/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Admin Product Management
+  async listProducts(
+    page: number = 1, 
+    limit: number = 10, 
+    search?: string,
+    categoryId?: number,
+    materialId?: number
+  ): Promise<ProductListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (search) params.append('search', search);
+    if (categoryId !== undefined) params.append('category_id', categoryId.toString());
+    if (materialId !== undefined) params.append('material_id', materialId.toString());
+    
+    return this.request<ProductListResponse>(`/api/admin/products?${params}`);
+  }
+
+  async createProduct(productData: ProductRequest): Promise<ProductResponse> {
+    return this.request<ProductResponse>('/api/admin/products', {
+      method: 'POST',
+      body: JSON.stringify(productData),
+    });
+  }
+
+  async getProduct(id: number): Promise<ProductResponse> {
+    return this.request<ProductResponse>(`/api/admin/products/${id}`);
+  }
+
+  async updateProduct(id: number, productData: ProductRequest): Promise<ProductResponse> {
+    return this.request<ProductResponse>(`/api/admin/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(productData),
+    });
+  }
+
+  async deleteProduct(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/products/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Size Management
+  async listSizes(
+    page: number = 1,
+    limit: number = 10,
+    search: string = '',
+    productId?: number
+  ): Promise<SizeListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      search,
+    });
+
+    if (productId) {
+      params.append('product_id', productId.toString());
+    }
+
+    return this.request<SizeListResponse>(`/api/admin/sizes?${params}`);
+  }
+
+  async createSize(sizeData: SizeRequest): Promise<SizeResponse> {
+    return this.request<SizeResponse>('/api/admin/sizes', {
+      method: 'POST',
+      body: JSON.stringify(sizeData),
+    });
+  }
+
+  async getSize(id: number): Promise<SizeResponse> {
+    return this.request<SizeResponse>(`/api/admin/sizes/${id}`);
+  }
+
+  async updateSize(id: number, sizeData: SizeRequest): Promise<SizeResponse> {
+    return this.request<SizeResponse>(`/api/admin/sizes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(sizeData),
+    });
+  }
+
+  async deleteSize(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/sizes/${id}`, {
       method: 'DELETE',
     });
   }
