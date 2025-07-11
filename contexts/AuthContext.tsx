@@ -9,6 +9,7 @@ interface AuthContextType {
   register: (email: string, password: string, role?: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  getDefaultRedirectPath: () => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -74,8 +75,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const getDefaultRedirectPath = () => {
+    if (user?.role === 'admin') {
+      return '/admin';
+    }
+    return '/';
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, getDefaultRedirectPath }}>
       {children}
     </AuthContext.Provider>
   );

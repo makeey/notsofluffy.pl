@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, user, getDefaultRedirectPath } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,13 +20,19 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Use useEffect to handle redirect after user state is updated
+  useEffect(() => {
+    if (user) {
+      router.push(getDefaultRedirectPath());
+    }
+  }, [user, router, getDefaultRedirectPath]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background relative">

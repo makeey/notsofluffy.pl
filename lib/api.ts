@@ -222,6 +222,34 @@ export interface SizeListResponse {
   limit: number;
 }
 
+export interface ProductVariantRequest {
+  product_id: number;
+  name: string;
+  color_id: number;
+  is_default: boolean;
+  image_ids: number[];
+}
+
+export interface ProductVariantResponse {
+  id: number;
+  product_id: number;
+  name: string;
+  color_id: number;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+  product: ProductResponse;
+  color: ColorResponse;
+  images: ImageResponse[];
+}
+
+export interface ProductVariantListResponse {
+  product_variants: ProductVariantResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -673,6 +701,55 @@ class ApiClient {
 
   async deleteSize(id: number): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/api/admin/sizes/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // ProductVariant Management
+  async listProductVariants(
+    page: number = 1,
+    limit: number = 10,
+    search: string = '',
+    productId?: number,
+    colorId?: number
+  ): Promise<ProductVariantListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      search,
+    });
+
+    if (productId) {
+      params.append('product_id', productId.toString());
+    }
+
+    if (colorId) {
+      params.append('color_id', colorId.toString());
+    }
+
+    return this.request<ProductVariantListResponse>(`/api/admin/product-variants?${params}`);
+  }
+
+  async createProductVariant(variantData: ProductVariantRequest): Promise<ProductVariantResponse> {
+    return this.request<ProductVariantResponse>('/api/admin/product-variants', {
+      method: 'POST',
+      body: JSON.stringify(variantData),
+    });
+  }
+
+  async getProductVariant(id: number): Promise<ProductVariantResponse> {
+    return this.request<ProductVariantResponse>(`/api/admin/product-variants/${id}`);
+  }
+
+  async updateProductVariant(id: number, variantData: ProductVariantRequest): Promise<ProductVariantResponse> {
+    return this.request<ProductVariantResponse>(`/api/admin/product-variants/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(variantData),
+    });
+  }
+
+  async deleteProductVariant(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/product-variants/${id}`, {
       method: 'DELETE',
     });
   }
