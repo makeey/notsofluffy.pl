@@ -205,6 +205,8 @@ export interface SizeRequest {
   d: number;
   e: number;
   f: number;
+  use_stock: boolean;
+  stock_quantity: number;
 }
 
 export interface SizeResponse {
@@ -218,6 +220,10 @@ export interface SizeResponse {
   d: number;
   e: number;
   f: number;
+  use_stock: boolean;
+  stock_quantity: number;
+  reserved_quantity: number;
+  available_stock: number;
   created_at: string;
   updated_at: string;
   product: ProductResponse;

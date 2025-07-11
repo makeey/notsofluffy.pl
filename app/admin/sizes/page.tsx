@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Edit, Trash2, Ruler } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Ruler, Package, AlertTriangle } from "lucide-react";
 import { apiClient, SizeResponse, ProductResponse } from "@/lib/api";
 import { SizeForm } from "@/components/size-form";
 
@@ -196,49 +196,91 @@ export default function SizesPage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Product</TableHead>
                 <TableHead>Base Price</TableHead>
+                <TableHead>Stock Status</TableHead>
                 <TableHead>Dimensions</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sizes && sizes.length > 0 && sizes.map((size) => (
-                <TableRow key={size.id}>
-                  <TableCell className="font-medium">{size.name}</TableCell>
-                  <TableCell>{size.product?.name || 'N/A'}</TableCell>
-                  <TableCell>${size.base_price.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-1">
-                      <Ruler className="w-3 h-3 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        {size.a} × {size.b} × {size.c} × {size.d} × {size.e} × {size.f}
-                      </span>
+              {sizes && sizes.length > 0 && sizes.map((size) => {
+                const getStockStatus = () => {
+                  if (!size.use_stock) {
+                    return (
+                      <div className="flex items-center space-x-1 text-green-600">
+                        <Package className="w-4 h-4" />
+                        <span className="text-sm">Unlimited</span>
+                      </div>
+                    );
+                  }
+                  
+                  const availableStock = size.available_stock || 0;
+                  
+                  if (availableStock === 0) {
+                    return (
+                      <div className="flex items-center space-x-1 text-red-600">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="text-sm">Out of Stock</span>
+                      </div>
+                    );
+                  }
+                  
+                  if (availableStock <= 5) {
+                    return (
+                      <div className="flex items-center space-x-1 text-orange-600">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span className="text-sm">Low Stock ({availableStock})</span>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div className="flex items-center space-x-1 text-green-600">
+                      <Package className="w-4 h-4" />
+                      <span className="text-sm">In Stock ({availableStock})</span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(size.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingSize(size)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(size.id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                  );
+                };
+
+                return (
+                  <TableRow key={size.id}>
+                    <TableCell className="font-medium">{size.name}</TableCell>
+                    <TableCell>{size.product?.name || 'N/A'}</TableCell>
+                    <TableCell>${size.base_price.toFixed(2)}</TableCell>
+                    <TableCell>{getStockStatus()}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-1">
+                        <Ruler className="w-3 h-3 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          {size.a} × {size.b} × {size.c} × {size.d} × {size.e} × {size.f}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(size.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingSize(size)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(size.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
 

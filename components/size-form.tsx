@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -26,6 +27,8 @@ const sizeSchema = z.object({
   d: z.number().min(0, "Dimension D must be positive"),
   e: z.number().min(0, "Dimension E must be positive"),
   f: z.number().min(0, "Dimension F must be positive"),
+  use_stock: z.boolean(),
+  stock_quantity: z.number().min(0, "Stock quantity must be positive"),
 });
 
 type SizeFormData = z.infer<typeof sizeSchema>;
@@ -62,6 +65,8 @@ export function SizeForm({ size, onSuccess }: SizeFormProps) {
       d: size?.d || 0,
       e: size?.e || 0,
       f: size?.f || 0,
+      use_stock: size?.use_stock || false,
+      stock_quantity: size?.stock_quantity || 0,
     },
   });
 
@@ -257,6 +262,46 @@ export function SizeForm({ size, onSuccess }: SizeFormProps) {
             <p className="text-red-600 text-sm">{errors.f.message}</p>
           )}
         </div>
+      </div>
+
+      <div className="space-y-4 border-t pt-4">
+        <h3 className="text-lg font-medium">Stock Management</h3>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="use_stock"
+            checked={watch("use_stock")}
+            onCheckedChange={(checked) => setValue("use_stock", !!checked)}
+          />
+          <Label htmlFor="use_stock" className="text-sm font-medium">
+            Enable stock tracking for this size
+          </Label>
+        </div>
+
+        {watch("use_stock") && (
+          <div className="space-y-2">
+            <Label htmlFor="stock_quantity">Stock Quantity *</Label>
+            <Input
+              id="stock_quantity"
+              type="number"
+              min="0"
+              {...register("stock_quantity", { valueAsNumber: true })}
+              placeholder="Enter available stock quantity"
+            />
+            {errors.stock_quantity && (
+              <p className="text-red-600 text-sm">{errors.stock_quantity.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Number of items available in stock. Leave at 0 if currently out of stock.
+            </p>
+          </div>
+        )}
+
+        {!watch("use_stock") && (
+          <p className="text-sm text-muted-foreground">
+            Stock tracking is disabled. This size will be treated as always available.
+          </p>
+        )}
       </div>
 
       <div className="flex justify-end space-x-2">

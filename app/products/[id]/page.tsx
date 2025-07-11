@@ -117,9 +117,35 @@ export default function ProductDetailPage() {
   };
 
   const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 1 && newQuantity <= 99) {
+    const maxQuantity = getMaxQuantity();
+    if (newQuantity >= 1 && newQuantity <= Math.min(99, maxQuantity)) {
       setQuantity(newQuantity);
     }
+  };
+
+  const getMaxQuantity = (): number => {
+    if (!selectedSize) return 99;
+    if (!selectedSize.use_stock) return 99;
+    return Math.max(0, selectedSize.available_stock);
+  };
+
+  const isStockAvailable = (size: SizeResponse): boolean => {
+    if (!size.use_stock) return true;
+    return size.available_stock > 0;
+  };
+
+  const getStockDisplayText = (size: SizeResponse): string => {
+    if (!size.use_stock) return "";
+    if (size.available_stock <= 0) return "Out of Stock";
+    if (size.available_stock <= 5) return `Low Stock (${size.available_stock})`;
+    return `In Stock (${size.available_stock})`;
+  };
+
+  const getStockDisplayColor = (size: SizeResponse): string => {
+    if (!size.use_stock) return "";
+    if (size.available_stock <= 0) return "text-red-600";
+    if (size.available_stock <= 5) return "text-orange-600";
+    return "text-green-600";
   };
 
   const incrementQuantity = () => {
@@ -155,7 +181,7 @@ export default function ProductDetailPage() {
     }
   };
 
-  const isAddToCartEnabled = selectedVariant && selectedSize && !addingToCart;
+  const isAddToCartEnabled = selectedVariant && selectedSize && !addingToCart && isStockAvailable(selectedSize);
 
   if (loading) {
     return (
@@ -322,28 +348,50 @@ export default function ProductDetailPage() {
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Size</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {data.sizes.map((size) => (
-                    <button
-                      key={size.id}
-                      onClick={() => setSelectedSize(size)}
-                      className={`p-3 rounded-lg border-2 transition-colors text-left ${
-                        selectedSize?.id === size.id
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <div>
-                        <p className="font-medium text-gray-900">{size.name}</p>
-                        <div className="text-sm text-gray-500 space-y-1">
-                          <p>A: {size.a}, B: {size.b}, C: {size.c}</p>
-                          <p>D: {size.d}, E: {size.e}, F: {size.f}</p>
+                  {data.sizes.map((size) => {
+                    const isAvailable = isStockAvailable(size);
+                    const stockText = getStockDisplayText(size);
+                    const stockColor = getStockDisplayColor(size);
+                    
+                    return (
+                      <button
+                        key={size.id}
+                        onClick={() => isAvailable && setSelectedSize(size)}
+                        disabled={!isAvailable}
+                        className={`p-3 rounded-lg border-2 transition-colors text-left ${
+                          !isAvailable
+                            ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                            : selectedSize?.id === size.id
+                            ? "border-indigo-500 bg-indigo-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div>
+                          <p className={`font-medium ${
+                            !isAvailable ? "text-gray-400" : "text-gray-900"
+                          }`}>
+                            {size.name}
+                          </p>
+                          <div className="text-sm text-gray-500 space-y-1">
+                            <p>A: {size.a}, B: {size.b}, C: {size.c}</p>
+                            <p>D: {size.d}, E: {size.e}, F: {size.f}</p>
+                          </div>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className={`text-sm font-medium ${
+                              !isAvailable ? "text-gray-400" : "text-gray-900"
+                            }`}>
+                              ${size.base_price}
+                            </p>
+                            {stockText && (
+                              <p className={`text-xs font-medium ${stockColor}`}>
+                                {stockText}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-sm font-medium text-gray-900 mt-1">
-                          ${size.base_price}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -410,19 +458,27 @@ export default function ProductDetailPage() {
                 <input
                   type="number"
                   min="1"
-                  max="99"
+                  max={getMaxQuantity()}
                   value={quantity}
                   onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
                   className="w-20 text-center border border-gray-300 rounded-md py-2 px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
                 <button
                   onClick={incrementQuantity}
-                  disabled={quantity >= 99}
+                  disabled={quantity >= getMaxQuantity()}
                   className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <PlusIcon className="h-4 w-4" />
                 </button>
               </div>
+              {selectedSize && selectedSize.use_stock && (
+                <p className="text-sm text-gray-500 mt-2">
+                  {selectedSize.available_stock > 0 
+                    ? `${selectedSize.available_stock} available`
+                    : "Out of stock"
+                  }
+                </p>
+              )}
             </div>
 
             {/* Price and Add to Cart */}
@@ -447,9 +503,13 @@ export default function ProductDetailPage() {
               >
                 {addingToCart 
                   ? "Adding to Cart..." 
-                  : isAddToCartEnabled 
-                    ? "Add to Cart" 
-                    : "Select Size to Continue"
+                  : !selectedVariant
+                    ? "Select Color to Continue"
+                    : !selectedSize
+                      ? "Select Size to Continue"
+                      : selectedSize && !isStockAvailable(selectedSize)
+                        ? "Out of Stock"
+                        : "Add to Cart"
                 }
               </button>
 
@@ -461,6 +521,11 @@ export default function ProductDetailPage() {
               {!selectedSize && selectedVariant && (
                 <p className="text-sm text-gray-500 mt-2">
                   Please select a size
+                </p>
+              )}
+              {selectedSize && !isStockAvailable(selectedSize) && (
+                <p className="text-sm text-red-600 mt-2">
+                  This size is currently out of stock
                 </p>
               )}
             </div>
