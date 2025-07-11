@@ -38,6 +38,11 @@ export interface UserListResponse {
   limit: number;
 }
 
+export interface CategoryListResponse {
+  categories: Category[];
+  total: number;
+}
+
 export interface ImageResponse {
   id: number;
   filename: string;
@@ -76,6 +81,8 @@ export interface CategoryResponse {
   updated_at: string;
   image?: ImageResponse;
 }
+
+export type Category = CategoryResponse;
 
 export interface CategoryListResponse {
   categories: CategoryResponse[];
@@ -752,6 +759,15 @@ class ApiClient {
     return this.request<{ message: string }>(`/api/admin/product-variants/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  // Public API methods (no authentication required)
+  async getPublicCategories(): Promise<CategoryListResponse> {
+    const response = await fetch(`${this.baseUrl}/api/categories`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
   }
 }
 
