@@ -102,7 +102,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!cart || cart.items.length === 0) {
+    if (!cart || !cart.items || cart.items.length === 0) {
       setError("Your cart is empty");
       return;
     }
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return (
       <div className="bg-white">
         <Header />
@@ -224,7 +224,7 @@ export default function CheckoutPage() {
               role="list"
               className="divide-y divide-gray-200 text-sm font-medium text-gray-900"
             >
-              {cart.items.map((item) => {
+              {cart.items?.map((item) => {
                 const imageUrl = item.variant?.images && item.variant.images.length > 0 
                   ? `${process.env.NEXT_PUBLIC_API_URL}/${item.variant.images[0].path}`
                   : `${process.env.NEXT_PUBLIC_API_URL}/${item.product.main_image.path}`;
