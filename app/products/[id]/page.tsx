@@ -10,6 +10,8 @@ import type {
 } from "@/lib/api";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import Link from "next/link";
+import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 
 interface ProductDetailData {
   product: ProductResponse;
@@ -151,6 +153,34 @@ export default function ProductDetailPage() {
     <div className="bg-white">
       <Header />
       <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumb Navigation */}
+        <nav className="flex items-center mb-8" aria-label="Breadcrumb">
+          <Link 
+            href="/" 
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            Home
+          </Link>
+          <span className="mx-2 text-gray-400">/</span>
+          <Link 
+            href="/products" 
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            Products
+          </Link>
+          <span className="mx-2 text-gray-400">/</span>
+          <span className="text-gray-900 font-medium">{data.product.name}</span>
+        </nav>
+
+        {/* Back Button */}
+        <Link 
+          href="/products" 
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+        >
+          <ChevronLeftIcon className="h-5 w-5 mr-1" />
+          Back to Products
+        </Link>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left side - Image Gallery */}
           <div className="space-y-4">
