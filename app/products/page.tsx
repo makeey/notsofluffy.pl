@@ -30,20 +30,9 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const productsPerPage = 12;
-  const urlUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoad = useRef(true);
   const fetchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Initialize filters from URL params
-  useEffect(() => {
-    const categoryParams = searchParams.getAll("category");
-    const searchParam = searchParams.get("search") || "";
-    const pageParam = parseInt(searchParams.get("page") || "1");
-
-    setSelectedCategories(categoryParams);
-    setSearchQuery(searchParam);
-    setCurrentPage(pageParam);
-  }, [searchParams]);
+  const isUpdatingURL = useRef(false);
 
   // Fetch categories
   useEffect(() => {
@@ -61,74 +50,122 @@ function ProductsContent() {
 
   // Track if this is the initial load
   const isInitialLoadRef = useRef(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
   
-  // Debounced fetch products function
-  const debouncedFetchProducts = useCallback(async () => {
-    try {
-      // Show different loading states for initial load vs filtering
-      if (isInitialLoadRef.current) {
-        setLoading(true);
-        isInitialLoadRef.current = false;
-      } else {
-        // Clear any existing filtering timeout
-        if (filteringTimeoutRef.current) {
-          clearTimeout(filteringTimeoutRef.current);
-        }
-        setIsFiltering(true);
-      }
-      setError(null);
-
-      const response = await apiClient.getPublicProducts({
-        page: currentPage,
-        limit: productsPerPage,
-        search: searchQuery || undefined,
-        category:
-          selectedCategories.length > 0 ? selectedCategories : undefined,
-      });
-
-      setProducts(response.products);
-      setTotalPages(Math.ceil(response.total / productsPerPage));
-    } catch (error) {
-      console.error("Failed to fetch products:", error);
-      setError("Failed to load products");
-    } finally {
-      setLoading(false);
-      // Delay hiding the filtering state to prevent flickering
-      if (filteringTimeoutRef.current) {
-        clearTimeout(filteringTimeoutRef.current);
-      }
-      filteringTimeoutRef.current = setTimeout(() => {
-        setIsFiltering(false);
-      }, 100);
-    }
-  }, [currentPage, searchQuery, selectedCategories, productsPerPage]);
-  
-  // Fetch products when filters change with debouncing
+  // Read URL params and sync with state (only on navigation, not our own URL updates)
   useEffect(() => {
+    // Skip if we're updating the URL ourselves
+    if (isUpdatingURL.current) {
+      return;
+    }
+
+    const categoryParams = searchParams.getAll("category");
+    const searchParam = searchParams.get("search") || "";
+    const pageParam = parseInt(searchParams.get("page") || "1");
+
+    // Check if URL params differ from current state
+    const categoryParamsDiffer = JSON.stringify(categoryParams.sort()) !== JSON.stringify(selectedCategories.sort());
+    const searchParamDiffer = searchParam !== searchQuery;
+    const pageParamDiffer = pageParam !== currentPage;
+
+    // Only update state if URL params actually differ
+    if (categoryParamsDiffer || searchParamDiffer || pageParamDiffer) {
+      setSelectedCategories(categoryParams);
+      setSearchQuery(searchParam);
+      setCurrentPage(pageParam);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]); // Only depend on searchParams to prevent feedback loops
+
+  // Fetch products when state changes
+  useEffect(() => {
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     // Clear any existing timeout
     if (fetchTimeoutRef.current) {
       clearTimeout(fetchTimeoutRef.current);
     }
 
-    // Only fetch if categories are loaded
-    if (categories.length > 0) {
-      // Immediate fetch for page changes, shorter debounce for filters
-      const delay = 150; // Short delay to prevent rapid firing
-      
-      fetchTimeoutRef.current = setTimeout(() => {
-        debouncedFetchProducts();
-      }, delay);
+    // Only proceed if categories are loaded
+    if (categories.length === 0) {
+      return;
     }
+
+    // Function to fetch products with current state
+    const fetchProducts = async (signal: AbortSignal) => {
+      try {
+        // Show different loading states for initial load vs filtering
+        if (isInitialLoadRef.current) {
+          setLoading(true);
+          isInitialLoadRef.current = false;
+        } else {
+          // Clear any existing filtering timeout
+          if (filteringTimeoutRef.current) {
+            clearTimeout(filteringTimeoutRef.current);
+          }
+          setIsFiltering(true);
+        }
+        setError(null);
+
+        const response = await apiClient.getPublicProducts({
+          page: currentPage,
+          limit: productsPerPage,
+          search: searchQuery || undefined,
+          category:
+            selectedCategories.length > 0 ? selectedCategories : undefined,
+        });
+
+        // Check if request was aborted
+        if (signal.aborted) {
+          return;
+        }
+
+        setProducts(response.products);
+        setTotalPages(Math.ceil(response.total / productsPerPage));
+      } catch (error) {
+        // Don't show error if request was aborted
+        if (signal.aborted) {
+          return;
+        }
+        console.error("Failed to fetch products:", error);
+        setError("Failed to load products");
+      } finally {
+        setLoading(false);
+        // Delay hiding the filtering state to prevent flickering
+        if (filteringTimeoutRef.current) {
+          clearTimeout(filteringTimeoutRef.current);
+        }
+        filteringTimeoutRef.current = setTimeout(() => {
+          setIsFiltering(false);
+        }, 100);
+      }
+    };
+
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
+    
+    // Fetch immediately if it's the first load, otherwise debounce
+    const delay = isInitialLoadRef.current ? 0 : 150;
+    
+    fetchTimeoutRef.current = setTimeout(() => {
+      fetchProducts(abortControllerRef.current!.signal);
+    }, delay);
 
     return () => {
       if (fetchTimeoutRef.current) {
         clearTimeout(fetchTimeoutRef.current);
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [categories, currentPage, searchQuery, selectedCategories, debouncedFetchProducts]);
+  }, [categories, currentPage, searchQuery, selectedCategories, productsPerPage]);
 
-  // Debounced URL update function
-  const updateURL = useCallback(() => {
+  // Update URL when filters change (immediate, no debounce needed since main effect handles debouncing)
+  useEffect(() => {
     if (isInitialLoad.current) {
       isInitialLoad.current = false;
       return;
@@ -143,34 +180,25 @@ function ProductsContent() {
     const queryString = params.toString();
     const newUrl = `/products${queryString ? `?${queryString}` : ""}`;
     
+    // Set flag to indicate we're updating the URL
+    isUpdatingURL.current = true;
+    
     // Use shallow routing to prevent full page re-renders
     router.push(newUrl, { scroll: false });
+    
+    // Reset flag after a short delay to allow the URL change to propagate
+    setTimeout(() => {
+      isUpdatingURL.current = false;
+    }, 50);
   }, [searchQuery, currentPage, selectedCategories, router]);
 
-  // Update URL when filters change (debounced)
-  useEffect(() => {
-    if (urlUpdateTimeoutRef.current) {
-      clearTimeout(urlUpdateTimeoutRef.current);
-    }
-
-    urlUpdateTimeoutRef.current = setTimeout(() => {
-      updateURL();
-    }, 300); // 300ms debounce
-
-    return () => {
-      if (urlUpdateTimeoutRef.current) {
-        clearTimeout(urlUpdateTimeoutRef.current);
-      }
-    };
-  }, [updateURL]);
-
   const handleCategoryChange = useCallback((categoryName: string, checked: boolean) => {
+    // Batch state updates to prevent multiple effect triggers
     setSelectedCategories((prev) => {
-      if (checked) {
-        return [...prev, categoryName];
-      } else {
-        return prev.filter((cat) => cat !== categoryName);
-      }
+      const newCategories = checked 
+        ? [...prev, categoryName]
+        : prev.filter((cat) => cat !== categoryName);
+      return newCategories;
     });
     setCurrentPage(1); // Reset to first page when filters change
   }, []);
