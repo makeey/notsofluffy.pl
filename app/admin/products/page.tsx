@@ -233,7 +233,7 @@ export default function ProductsAdmin() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((category) => (
+                  {categories && categories.map((category) => (
                     <SelectItem
                       key={category.id}
                       value={category.id.toString()}
@@ -254,7 +254,7 @@ export default function ProductsAdmin() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All materials</SelectItem>
-                  {materials.map((material) => (
+                  {materials && materials.map((material) => (
                     <SelectItem
                       key={material.id}
                       value={material.id.toString()}
@@ -342,8 +342,8 @@ export default function ProductsAdmin() {
 
                   {/* Image Count and Services */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{product.images.length} images</span>
-                    <span>{product.additional_services.length} services</span>
+                    <span>{product.images?.length || 0} images</span>
+                    <span>{product.additional_services?.length || 0} services</span>
                   </div>
 
                   {/* Created Date */}
