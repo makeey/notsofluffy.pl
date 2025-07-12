@@ -481,6 +481,21 @@ export interface UserAddressListResponse {
   total: number;
 }
 
+export interface SearchResponse {
+  products: ProductResponse[];
+  total: number;
+  page: number;
+  limit: number;
+  query: string;
+  sort: string;
+  suggestion?: string;
+}
+
+export interface SearchSuggestionsResponse {
+  suggestions: string[];
+  query: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -1023,6 +1038,45 @@ class ApiClient {
     sizes: SizeResponse[];
   }> {
     const response = await fetch(`${this.baseUrl}/api/products/${id}`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Search API methods
+  async searchProducts(params: {
+    q?: string;
+    page?: number;
+    limit?: number;
+    sort?: 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'name';
+    category?: string[];
+  } = {}): Promise<SearchResponse> {
+    const searchParams = new URLSearchParams();
+    
+    if (params.q) searchParams.append('q', params.q);
+    if (params.page) searchParams.append('page', params.page.toString());
+    if (params.limit) searchParams.append('limit', params.limit.toString());
+    if (params.sort) searchParams.append('sort', params.sort);
+    if (params.category && params.category.length > 0) {
+      params.category.forEach(cat => searchParams.append('category', cat));
+    }
+    
+    const url = `${this.baseUrl}/api/search${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getSearchSuggestions(query: string, limit: number = 5): Promise<SearchSuggestionsResponse> {
+    const searchParams = new URLSearchParams();
+    searchParams.append('q', query);
+    searchParams.append('limit', limit.toString());
+    
+    const url = `${this.baseUrl}/api/search/suggestions?${searchParams.toString()}`;
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }

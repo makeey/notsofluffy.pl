@@ -26,6 +26,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { apiClient } from "@/lib/api";
 import { Category } from "@/lib/api";
+import { SearchInput } from "@/components/SearchInput";
 
 // Transform API categories to navigation structure
 const transformCategoriesToNavigation = (categories: Category[]) => {
