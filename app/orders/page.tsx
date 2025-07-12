@@ -166,7 +166,7 @@ export default function OrdersPage() {
                   </h3>
 
                   <div className="bg-gray-50 px-4 py-6 sm:rounded-lg sm:p-6 md:flex md:items-center md:justify-between md:space-x-6 lg:space-x-8">
-                    <dl className="flex-auto divide-y divide-gray-200 text-sm text-gray-600 md:grid md:grid-cols-3 md:gap-x-6 md:divide-y-0 lg:w-1/2 lg:flex-none lg:gap-x-8">
+                    <dl className="flex-auto divide-y divide-gray-200 text-sm text-gray-600 md:grid md:grid-cols-4 md:gap-x-6 md:divide-y-0 lg:w-2/3 lg:flex-none lg:gap-x-8">
                       <div className="max-md:flex max-md:justify-between max-md:py-4 max-md:first:pt-0 max-md:last:pb-0">
                         <dt className="font-medium text-gray-900">Numer zamówienia</dt>
                         <dd className="md:mt-1">#{order.id}</dd>
@@ -181,6 +181,18 @@ export default function OrdersPage() {
                         <dt className="font-medium text-gray-900">Łączna kwota</dt>
                         <dd className="font-medium text-gray-900 md:mt-1">
                           {order.total_amount.toFixed(2)} zł
+                        </dd>
+                      </div>
+                      <div className="max-md:flex max-md:justify-between max-md:py-4 max-md:first:pt-0 max-md:last:pb-0">
+                        <dt className="font-medium text-gray-900">Faktura</dt>
+                        <dd className="md:mt-1">
+                          {order.requires_invoice ? (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Wymagana
+                            </span>
+                          ) : (
+                            <span className="text-gray-500 text-xs">Nie</span>
+                          )}
                         </dd>
                       </div>
                     </dl>

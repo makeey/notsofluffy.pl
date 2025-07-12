@@ -59,6 +59,10 @@ export default function CheckoutPage() {
 
   const [paymentMethod] = useState("");
   const [notes, setNotes] = useState("");
+  
+  // Invoice fields
+  const [requiresInvoice, setRequiresInvoice] = useState(false);
+  const [nip, setNip] = useState("");
 
   // Form validation
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -137,6 +141,19 @@ export default function CheckoutPage() {
       if (!billingAddress.country) newErrors.billing_country = "Country is required";
     }
 
+    // Invoice validation
+    if (requiresInvoice) {
+      if (!nip.trim()) {
+        newErrors.nip = "NIP is required when invoice is requested";
+      } else {
+        // Basic NIP validation - 10 digits
+        const nipDigits = nip.replace(/\D/g, '');
+        if (nipDigits.length !== 10) {
+          newErrors.nip = "NIP must be 10 digits";
+        }
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -169,6 +186,8 @@ export default function CheckoutPage() {
         same_as_shipping: sameAsShipping,
         payment_method: paymentMethod || undefined,
         notes: notes || undefined,
+        requires_invoice: requiresInvoice,
+        nip: requiresInvoice ? nip : undefined,
       };
 
       const orderResponse = await apiClient.createOrder(orderRequest);
@@ -1098,6 +1117,86 @@ export default function CheckoutPage() {
 
                   </div>
                 </>
+              )}
+            </section>
+
+            <section aria-labelledby="invoice-heading" className="mt-10">
+              <h2
+                id="invoice-heading"
+                className="text-lg font-medium text-gray-900"
+              >
+                Invoice information
+              </h2>
+
+              <div className="mt-6 flex gap-3">
+                <div className="flex h-6 shrink-0 items-center">
+                  <div className="group grid size-4 grid-cols-1">
+                    <input
+                      id="requires-invoice"
+                      name="requires-invoice"
+                      type="checkbox"
+                      checked={requiresInvoice}
+                      onChange={(e) => setRequiresInvoice(e.target.checked)}
+                      className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                    />
+                    <svg
+                      fill="none"
+                      viewBox="0 0 14 14"
+                      className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
+                    >
+                      <path
+                        d="M3 8L6 11L11 3.5"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="opacity-0 group-has-checked:opacity-100"
+                      />
+                      <path
+                        d="M3 7H11"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="opacity-0 group-has-indeterminate:opacity-100"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <label
+                  htmlFor="requires-invoice"
+                  className="text-sm/6 font-medium text-gray-900"
+                >
+                  Potrzebuje faktury
+                </label>
+              </div>
+
+              {requiresInvoice && (
+                <div className="mt-6">
+                  <label
+                    htmlFor="nip"
+                    className="block text-sm/6 font-medium text-gray-700"
+                  >
+                    NIP (Tax ID)
+                  </label>
+                  <div className="mt-2">
+                    <input
+                      id="nip"
+                      name="nip"
+                      type="text"
+                      placeholder="1234567890"
+                      value={nip}
+                      onChange={(e) => setNip(e.target.value)}
+                      className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
+                        errors.nip ? 'outline-red-500' : 'outline-gray-300'
+                      } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
+                    />
+                    {errors.nip && (
+                      <p className="mt-1 text-sm text-red-600">{errors.nip}</p>
+                    )}
+                    <p className="mt-2 text-sm text-gray-500">
+                      Enter your 10-digit Polish tax identification number (NIP)
+                    </p>
+                  </div>
+                </div>
               )}
             </section>
 

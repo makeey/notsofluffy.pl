@@ -251,6 +251,23 @@ export default function OrderDetailsPage() {
                     User ID: {order.user_id}
                   </div>
                 )}
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
+                  <span className="text-sm font-medium">Invoice:</span>
+                  {order.requires_invoice ? (
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Required
+                      </span>
+                      {order.nip && (
+                        <span className="text-sm text-muted-foreground">
+                          NIP: {order.nip}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Not required</span>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

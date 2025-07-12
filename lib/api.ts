@@ -325,6 +325,8 @@ export interface OrderRequest {
   same_as_shipping: boolean;
   payment_method?: string;
   notes?: string;
+  requires_invoice: boolean;
+  nip?: string;
 }
 
 export interface ShippingAddressResponse {
@@ -406,6 +408,8 @@ export interface OrderResponse {
   payment_method?: string;
   payment_status: string;
   notes?: string;
+  requires_invoice: boolean;
+  nip?: string;
   shipping_address?: ShippingAddressResponse;
   billing_address?: BillingAddressResponse;
   items?: OrderItemResponse[];

@@ -175,6 +175,7 @@ export default function OrdersPage() {
               <TableHead>Status</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Payment</TableHead>
+              <TableHead>Invoice</TableHead>
               <TableHead>Date</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -182,13 +183,13 @@ export default function OrdersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   No orders found
                 </TableCell>
               </TableRow>
@@ -230,6 +231,22 @@ export default function OrdersPage() {
                         </div>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {order.requires_invoice ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 w-fit">
+                          Required
+                        </span>
+                        {order.nip && (
+                          <span className="text-xs text-muted-foreground">
+                            {order.nip}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">No</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">

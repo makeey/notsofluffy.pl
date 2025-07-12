@@ -408,6 +408,31 @@ export default function OrderPage() {
                   </p>
                 </div>
               )}
+              
+              {/* Invoice Information */}
+              <div className="mt-4 pt-4 border-t border-gray-300">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-medium text-gray-900">Faktura:</span>
+                  </p>
+                  <div className="text-right">
+                    {order.requires_invoice ? (
+                      <div>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Wymagana
+                        </span>
+                        {order.nip && (
+                          <p className="text-sm text-gray-700 mt-1">
+                            <span className="font-medium text-gray-900">NIP:</span> {order.nip}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-500">Nie wymagana</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
