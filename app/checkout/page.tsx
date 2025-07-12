@@ -85,7 +85,6 @@ export default function CheckoutPage() {
     if (!shippingAddress.state_province) newErrors.shipping_state_province = "State/Province is required";
     if (!shippingAddress.postal_code) newErrors.shipping_postal_code = "Postal code is required";
     if (!shippingAddress.country) newErrors.shipping_country = "Country is required";
-    if (!shippingAddress.phone) newErrors.shipping_phone = "Phone number is required";
 
     // Billing address validation (if different from shipping)
     if (!sameAsShipping) {
@@ -96,7 +95,6 @@ export default function CheckoutPage() {
       if (!billingAddress.state_province) newErrors.billing_state_province = "State/Province is required";
       if (!billingAddress.postal_code) newErrors.billing_postal_code = "Postal code is required";
       if (!billingAddress.country) newErrors.billing_country = "Country is required";
-      if (!billingAddress.phone) newErrors.billing_phone = "Phone number is required";
     }
 
     setErrors(newErrors);
@@ -119,11 +117,15 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
+      // Copy main phone number to address objects for API compatibility
+      const shippingWithPhone = { ...shippingAddress, phone };
+      const billingWithPhone = sameAsShipping ? shippingWithPhone : { ...billingAddress, phone };
+
       const orderRequest: OrderRequest = {
         email,
         phone,
-        shipping_address: shippingAddress,
-        billing_address: sameAsShipping ? shippingAddress : billingAddress,
+        shipping_address: shippingWithPhone,
+        billing_address: billingWithPhone,
         same_as_shipping: sameAsShipping,
         payment_method: paymentMethod || undefined,
         notes: notes || undefined,
@@ -131,8 +133,8 @@ export default function CheckoutPage() {
 
       const order = await apiClient.createOrder(orderRequest);
       
-      // Redirect to order confirmation page
-      router.push(`/order-confirmation/${order.id}`);
+      // Redirect to order history page
+      router.push('/orders');
     } catch (err) {
       console.error("Order creation failed:", err);
       setError(err instanceof Error ? err.message : "Failed to create order");
@@ -602,30 +604,6 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="shipping-phone"
-                    className="block text-sm/6 font-medium text-gray-700"
-                  >
-                    Phone number
-                  </label>
-                  <div className="mt-2">
-                    <input
-                      id="shipping-phone"
-                      name="shipping-phone"
-                      type="tel"
-                      autoComplete="tel"
-                      value={shippingAddress.phone}
-                      onChange={(e) => updateShippingAddress('phone', e.target.value)}
-                      className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
-                        errors.shipping_phone ? 'outline-red-500' : 'outline-gray-300'
-                      } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
-                    />
-                    {errors.shipping_phone && (
-                      <p className="mt-1 text-sm text-red-600">{errors.shipping_phone}</p>
-                    )}
-                  </div>
-                </div>
               </div>
             </section>
 
@@ -868,30 +846,6 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="billing-phone"
-                      className="block text-sm/6 font-medium text-gray-700"
-                    >
-                      Phone number
-                    </label>
-                    <div className="mt-2">
-                      <input
-                        id="billing-phone"
-                        name="billing-phone"
-                        type="tel"
-                        autoComplete="tel"
-                        value={billingAddress.phone}
-                        onChange={(e) => updateBillingAddress('phone', e.target.value)}
-                        className={`block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 ${
-                          errors.billing_phone ? 'outline-red-500' : 'outline-gray-300'
-                        } placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6`}
-                      />
-                      {errors.billing_phone && (
-                        <p className="mt-1 text-sm text-red-600">{errors.billing_phone}</p>
-                      )}
-                    </div>
-                  </div>
                 </div>
               )}
             </section>
