@@ -2,6 +2,7 @@
 import { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogBackdrop,
@@ -60,6 +61,7 @@ export function Header() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { cartCount } = useCart();
+  const { user } = useAuth();
   const [navigation, setNavigation] = useState<{
     categories: {
       name: string;
@@ -200,7 +202,16 @@ export function Header() {
             </TabGroup>
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-              {/* Additional navigation items can be added here */}
+              {/* Orders link for authenticated users */}
+              {user && (
+                <Link
+                  href="/orders"
+                  className="text-base font-medium text-gray-900 hover:text-gray-700"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Moje zamówienia
+                </Link>
+              )}
             </div>
           </DialogPanel>
         </div>
@@ -356,6 +367,16 @@ export function Header() {
                       >
                         Wyszukaj
                       </Link>
+
+                      {/* Orders link for authenticated users */}
+                      {user && (
+                        <Link
+                          href="/orders"
+                          className="hidden text-sm font-medium text-white lg:block lg:ml-8"
+                        >
+                          Moje zamówienia
+                        </Link>
+                      )}
 
                       <div className="flex items-center lg:ml-8">
                         {/* Help */}

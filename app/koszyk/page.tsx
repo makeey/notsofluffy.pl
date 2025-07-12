@@ -92,7 +92,8 @@ export default function CartPage() {
     );
   }
 
-  const isEmpty = !cart || cart.items.length === 0;
+  const isEmpty = !cart || !cart.items || cart.items.length === 0;
+  const safeItems = cart?.items || [];
 
   return (
     <div className="bg-white">
@@ -128,7 +129,7 @@ export default function CartPage() {
                 role="list"
                 className="divide-y divide-gray-200 border-t border-b border-gray-200"
               >
-                {cart.items.map((item) => {
+                {safeItems.map((item) => {
                   const isUpdating = updatingItems.has(item.id);
                   // Priority: variant images first, then product main image
                   const mainImageUrl = item.variant?.images && item.variant.images.length > 0 

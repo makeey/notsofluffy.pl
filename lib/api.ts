@@ -1049,10 +1049,15 @@ class ApiClient {
 
   // Order API methods
   async createOrder(order: OrderRequest): Promise<OrderResponse> {
+    // Use authenticated request method that includes JWT tokens for logged-in users
+    // while still supporting session cookies for guest users
     const response = await fetch(`${this.baseUrl}/api/orders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(localStorage.getItem('access_token') ? {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        } : {}),
       },
       credentials: 'include', // Include cookies for session
       body: JSON.stringify(order),
@@ -1083,8 +1088,8 @@ class ApiClient {
     if (params.page) searchParams.append('page', params.page.toString());
     if (params.limit) searchParams.append('limit', params.limit.toString());
     
-    const url = `${this.baseUrl}/api/user/orders${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    return this.request<OrderListResponse>(url);
+    const endpoint = `/api/user/orders${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    return this.request<OrderListResponse>(endpoint);
   }
 
   // Admin Order Management
