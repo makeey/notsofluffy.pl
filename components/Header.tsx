@@ -61,7 +61,7 @@ export function Header() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { cartCount } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [navigation, setNavigation] = useState<{
     categories: {
       name: string;
@@ -203,21 +203,48 @@ export function Header() {
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
               {/* Profile and Orders links for authenticated users */}
-              {user && (
+              {user ? (
                 <div className="space-y-6">
                   <Link
                     href="/profile"
-                    className="text-base font-medium text-gray-900 hover:text-gray-700"
+                    className="block text-base font-medium text-gray-900 hover:text-gray-700"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Profil
                   </Link>
                   <Link
                     href="/orders"
-                    className="text-base font-medium text-gray-900 hover:text-gray-700"
+                    className="block text-base font-medium text-gray-900 hover:text-gray-700"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Moje zamówienia
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                      window.location.href = '/';
+                    }}
+                    className="block w-full text-left text-base font-medium text-red-600 hover:text-red-700"
+                  >
+                    Wyloguj się
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <Link
+                    href="/login"
+                    className="block text-base font-medium text-gray-900 hover:text-gray-700"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Zaloguj się
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="block text-base font-medium text-gray-900 hover:text-gray-700"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Zarejestruj się
                   </Link>
                 </div>
               )}
@@ -378,7 +405,7 @@ export function Header() {
                       </Link>
 
                       {/* Profile and Orders links for authenticated users */}
-                      {user && (
+                      {user ? (
                         <>
                           <Link
                             href="/profile"
@@ -391,6 +418,30 @@ export function Header() {
                             className="hidden text-sm font-medium text-white lg:block lg:ml-8"
                           >
                             Moje zamówienia
+                          </Link>
+                          <button
+                            onClick={() => {
+                              logout();
+                              window.location.href = '/';
+                            }}
+                            className="hidden text-sm font-medium text-white hover:text-gray-300 lg:block lg:ml-8"
+                          >
+                            Wyloguj się
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            href="/login"
+                            className="hidden text-sm font-medium text-white lg:block lg:ml-8"
+                          >
+                            Zaloguj się
+                          </Link>
+                          <Link
+                            href="/register"
+                            className="hidden text-sm font-medium text-white lg:block lg:ml-8"
+                          >
+                            Zarejestruj się
                           </Link>
                         </>
                       )}
