@@ -131,10 +131,16 @@ export default function CheckoutPage() {
         notes: notes || undefined,
       };
 
-      const order = await apiClient.createOrder(orderRequest);
+      const orderResponse = await apiClient.createOrder(orderRequest);
       
-      // Redirect to order history page
-      router.push('/orders');
+      // Redirect based on user authentication status
+      if (orderResponse.public_hash) {
+        // Guest order - redirect to order page using hash
+        router.push(`/order/${orderResponse.public_hash}`);
+      } else {
+        // Authenticated user - redirect to order history
+        router.push('/orders');
+      }
     } catch (err) {
       console.error("Order creation failed:", err);
       setError(err instanceof Error ? err.message : "Failed to create order");

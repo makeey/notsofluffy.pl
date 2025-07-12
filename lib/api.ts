@@ -386,6 +386,7 @@ export interface OrderItemResponse {
   quantity: number;
   unit_price: number;
   total_price: number;
+  main_image?: ImageResponse;
   services?: OrderItemServiceResponse[];
   created_at: string;
 }
@@ -394,6 +395,7 @@ export interface OrderResponse {
   id: number;
   user_id?: number;
   session_id?: string;
+  public_hash?: string;
   email: string;
   phone: string;
   status: string;
@@ -1071,6 +1073,11 @@ class ApiClient {
 
   async getOrder(id: number): Promise<OrderResponse> {
     const response = await fetch(`${this.baseUrl}/api/orders/${id}`, {
+      headers: {
+        ...(localStorage.getItem('access_token') ? {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        } : {}),
+      },
       credentials: 'include', // Include cookies for session
     });
     if (!response.ok) {

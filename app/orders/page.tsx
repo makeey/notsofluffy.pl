@@ -88,29 +88,6 @@ export default function OrdersPage() {
     });
   };
 
-  // Create product description from variant and size info
-  const getProductDescription = (item: {
-    variant_name?: string;
-    variant_color_name?: string;
-    size_name?: string;
-    size_dimensions?: Record<string, number>;
-  }): string => {
-    const parts = [];
-    
-    if (item.variant_name) parts.push(`Wariant: ${item.variant_name}`);
-    if (item.variant_color_name) parts.push(`Kolor: ${item.variant_color_name}`);
-    if (item.size_name) parts.push(`Rozmiar: ${item.size_name}`);
-    
-    // Add size dimensions if available
-    if (item.size_dimensions) {
-      const dimensions = Object.entries(item.size_dimensions)
-        .map(([key, value]) => `${key.toUpperCase()}: ${value}`)
-        .join(", ");
-      parts.push(`Wymiary: ${dimensions}`);
-    }
-
-    return parts.join(" • ");
-  };
 
   if (authLoading || loading) {
     return (
