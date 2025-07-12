@@ -424,6 +424,63 @@ export interface OrderStatusUpdateRequest {
   status: string;
 }
 
+// User Profile interfaces
+export interface UserProfileRequest {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+}
+
+export interface UserProfileResponse {
+  id: number;
+  user_id: number;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  created_at: string;
+  updated_at: string;
+  addresses: UserAddressResponse[];
+}
+
+export interface UserAddressRequest {
+  label: string;
+  first_name: string;
+  last_name: string;
+  company?: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state_province: string;
+  postal_code: string;
+  country: string;
+  phone?: string;
+  is_default: boolean;
+}
+
+export interface UserAddressResponse {
+  id: number;
+  user_id: number;
+  label: string;
+  first_name: string;
+  last_name: string;
+  company?: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state_province: string;
+  postal_code: string;
+  country: string;
+  phone?: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserAddressListResponse {
+  addresses: UserAddressResponse[];
+  total: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -1126,6 +1183,49 @@ class ApiClient {
   async deleteOrder(id: number): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/api/admin/orders/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  // User Profile Management
+  async getUserProfile(): Promise<UserProfileResponse> {
+    return this.request<UserProfileResponse>('/api/user/profile');
+  }
+
+  async updateUserProfile(profileData: UserProfileRequest): Promise<UserProfileResponse> {
+    return this.request<UserProfileResponse>('/api/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  // User Address Management
+  async getUserAddresses(): Promise<UserAddressListResponse> {
+    return this.request<UserAddressListResponse>('/api/user/addresses');
+  }
+
+  async createUserAddress(addressData: UserAddressRequest): Promise<UserAddressResponse> {
+    return this.request<UserAddressResponse>('/api/user/addresses', {
+      method: 'POST',
+      body: JSON.stringify(addressData),
+    });
+  }
+
+  async updateUserAddress(id: number, addressData: UserAddressRequest): Promise<UserAddressResponse> {
+    return this.request<UserAddressResponse>(`/api/user/addresses/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(addressData),
+    });
+  }
+
+  async deleteUserAddress(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/user/addresses/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async setDefaultAddress(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/user/addresses/${id}/default`, {
+      method: 'PATCH',
     });
   }
 }

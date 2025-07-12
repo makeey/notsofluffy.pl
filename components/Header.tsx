@@ -202,15 +202,24 @@ export function Header() {
             </TabGroup>
 
             <div className="space-y-6 border-t border-gray-200 px-4 py-6">
-              {/* Orders link for authenticated users */}
+              {/* Profile and Orders links for authenticated users */}
               {user && (
-                <Link
-                  href="/orders"
-                  className="text-base font-medium text-gray-900 hover:text-gray-700"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Moje zamówienia
-                </Link>
+                <div className="space-y-6">
+                  <Link
+                    href="/profile"
+                    className="text-base font-medium text-gray-900 hover:text-gray-700"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Profil
+                  </Link>
+                  <Link
+                    href="/orders"
+                    className="text-base font-medium text-gray-900 hover:text-gray-700"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Moje zamówienia
+                  </Link>
+                </div>
               )}
             </div>
           </DialogPanel>
@@ -368,14 +377,22 @@ export function Header() {
                         Wyszukaj
                       </Link>
 
-                      {/* Orders link for authenticated users */}
+                      {/* Profile and Orders links for authenticated users */}
                       {user && (
-                        <Link
-                          href="/orders"
-                          className="hidden text-sm font-medium text-white lg:block lg:ml-8"
-                        >
-                          Moje zamówienia
-                        </Link>
+                        <>
+                          <Link
+                            href="/profile"
+                            className="hidden text-sm font-medium text-white lg:block lg:ml-8"
+                          >
+                            Profil
+                          </Link>
+                          <Link
+                            href="/orders"
+                            className="hidden text-sm font-medium text-white lg:block lg:ml-8"
+                          >
+                            Moje zamówienia
+                          </Link>
+                        </>
                       )}
 
                       <div className="flex items-center lg:ml-8">

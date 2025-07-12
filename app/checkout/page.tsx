@@ -12,15 +12,22 @@ import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
-import type { OrderRequest, AddressRequest } from "@/lib/api";
+import type { OrderRequest, AddressRequest, UserAddressResponse } from "@/lib/api";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, loading: cartLoading } = useCart();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sameAsShipping, setSameAsShipping] = useState(true);
+  
+  // Saved addresses state
+  const [savedAddresses, setSavedAddresses] = useState<UserAddressResponse[]>([]);
+  const [selectedShippingAddressId, setSelectedShippingAddressId] = useState<number | null>(null);
+  const [selectedBillingAddressId, setSelectedBillingAddressId] = useState<number | null>(null);
 
   // Form state
   const [email, setEmail] = useState("");
@@ -56,11 +63,44 @@ export default function CheckoutPage() {
   // Form validation
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Load saved addresses for authenticated users
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user) {
+        try {
+          // Load user profile and addresses
+          const profile = await apiClient.getUserProfile();
+          
+          // Pre-populate user data
+          if (user.email) setEmail(user.email);
+          if (profile.phone) setPhone(profile.phone);
+          
+          // Load addresses
+          setSavedAddresses(profile.addresses);
+          
+          // Auto-select default address if available
+          const defaultAddress = profile.addresses.find(addr => addr.is_default);
+          if (defaultAddress) {
+            setSelectedShippingAddressId(defaultAddress.id);
+            populateAddressForm(defaultAddress, 'shipping');
+          }
+        } catch (err) {
+          console.error('Failed to load user data:', err);
+        }
+      }
+    };
+
+    if (!authLoading) {
+      loadUserData();
+    }
+  }, [user, authLoading]);
+
   useEffect(() => {
     if (sameAsShipping) {
       setBillingAddress(shippingAddress);
+      setSelectedBillingAddressId(selectedShippingAddressId);
     }
-  }, [sameAsShipping, shippingAddress]);
+  }, [sameAsShipping, shippingAddress, selectedShippingAddressId]);
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -149,12 +189,53 @@ export default function CheckoutPage() {
     }
   };
 
+  const populateAddressForm = (address: UserAddressResponse, type: 'shipping' | 'billing') => {
+    const addressData: AddressRequest = {
+      first_name: address.first_name,
+      last_name: address.last_name,
+      company: address.company || '',
+      address_line1: address.address_line1,
+      address_line2: address.address_line2 || '',
+      city: address.city,
+      state_province: address.state_province,
+      postal_code: address.postal_code,
+      country: address.country,
+      phone: address.phone || '',
+    };
+
+    if (type === 'shipping') {
+      setShippingAddress(addressData);
+    } else {
+      setBillingAddress(addressData);
+    }
+  };
+
+  const handleShippingAddressSelect = (addressId: number) => {
+    const address = savedAddresses.find(addr => addr.id === addressId);
+    if (address) {
+      setSelectedShippingAddressId(addressId);
+      populateAddressForm(address, 'shipping');
+    }
+  };
+
+  const handleBillingAddressSelect = (addressId: number) => {
+    const address = savedAddresses.find(addr => addr.id === addressId);
+    if (address) {
+      setSelectedBillingAddressId(addressId);
+      populateAddressForm(address, 'billing');
+    }
+  };
+
   const updateShippingAddress = (field: keyof AddressRequest, value: string) => {
     setShippingAddress(prev => ({ ...prev, [field]: value }));
+    // Clear selection when manually editing
+    setSelectedShippingAddressId(null);
   };
 
   const updateBillingAddress = (field: keyof AddressRequest, value: string) => {
     setBillingAddress(prev => ({ ...prev, [field]: value }));
+    // Clear selection when manually editing
+    setSelectedBillingAddressId(null);
   };
 
   if (cartLoading) {
@@ -353,12 +434,22 @@ export default function CheckoutPage() {
             )}
 
             <section aria-labelledby="contact-info-heading">
-              <h2
-                id="contact-info-heading"
-                className="text-lg font-medium text-gray-900"
-              >
-                Contact information
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2
+                  id="contact-info-heading"
+                  className="text-lg font-medium text-gray-900"
+                >
+                  Contact information
+                </h2>
+                {user && (
+                  <a
+                    href="/profile"
+                    className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
+                  >
+                    Manage addresses
+                  </a>
+                )}
+              </div>
 
               <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div>
@@ -420,6 +511,82 @@ export default function CheckoutPage() {
               >
                 Shipping address
               </h2>
+
+              {/* Saved Addresses Selector */}
+              {user && savedAddresses.length > 0 && (
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Select from saved addresses
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {savedAddresses.map((address) => (
+                      <div
+                        key={address.id}
+                        className={`relative cursor-pointer rounded-lg border p-3 ${
+                          selectedShippingAddressId === address.id
+                            ? 'border-indigo-600 bg-indigo-50'
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                        onClick={() => handleShippingAddressSelect(address.id)}
+                      >
+                        <div className="flex items-start">
+                          <div className="flex items-center h-5">
+                            <input
+                              type="radio"
+                              name="shipping-address-select"
+                              checked={selectedShippingAddressId === address.id}
+                              onChange={() => handleShippingAddressSelect(address.id)}
+                              className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                            />
+                          </div>
+                          <div className="ml-3 flex-1">
+                            <div className="flex items-center">
+                              <span className="text-sm font-medium text-gray-900">
+                                {address.label}
+                              </span>
+                              {address.is_default && (
+                                <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              <p>{address.first_name} {address.last_name}</p>
+                              <p>{address.address_line1}</p>
+                              <p>{address.postal_code} {address.city}, {address.state_province}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div
+                      className={`relative cursor-pointer rounded-lg border p-3 ${
+                        selectedShippingAddressId === null
+                          ? 'border-indigo-600 bg-indigo-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                      onClick={() => setSelectedShippingAddressId(null)}
+                    >
+                      <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                          <input
+                            type="radio"
+                            name="shipping-address-select"
+                            checked={selectedShippingAddressId === null}
+                            onChange={() => setSelectedShippingAddressId(null)}
+                            className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <div className="ml-3">
+                          <span className="text-sm font-medium text-gray-900">
+                            Enter new address
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                 <div>
@@ -663,7 +830,84 @@ export default function CheckoutPage() {
               </div>
 
               {!sameAsShipping && (
-                <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+                <>
+                  {/* Saved Billing Addresses Selector */}
+                  {user && savedAddresses.length > 0 && (
+                    <div className="mt-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Select from saved addresses for billing
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {savedAddresses.map((address) => (
+                          <div
+                            key={address.id}
+                            className={`relative cursor-pointer rounded-lg border p-3 ${
+                              selectedBillingAddressId === address.id
+                                ? 'border-indigo-600 bg-indigo-50'
+                                : 'border-gray-300 hover:border-gray-400'
+                            }`}
+                            onClick={() => handleBillingAddressSelect(address.id)}
+                          >
+                            <div className="flex items-start">
+                              <div className="flex items-center h-5">
+                                <input
+                                  type="radio"
+                                  name="billing-address-select"
+                                  checked={selectedBillingAddressId === address.id}
+                                  onChange={() => handleBillingAddressSelect(address.id)}
+                                  className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                />
+                              </div>
+                              <div className="ml-3 flex-1">
+                                <div className="flex items-center">
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {address.label}
+                                  </span>
+                                  {address.is_default && (
+                                    <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                      Default
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-gray-600 mt-1">
+                                  <p>{address.first_name} {address.last_name}</p>
+                                  <p>{address.address_line1}</p>
+                                  <p>{address.postal_code} {address.city}, {address.state_province}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <div
+                          className={`relative cursor-pointer rounded-lg border p-3 ${
+                            selectedBillingAddressId === null
+                              ? 'border-indigo-600 bg-indigo-50'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                          onClick={() => setSelectedBillingAddressId(null)}
+                        >
+                          <div className="flex items-start">
+                            <div className="flex items-center h-5">
+                              <input
+                                type="radio"
+                                name="billing-address-select"
+                                checked={selectedBillingAddressId === null}
+                                onChange={() => setSelectedBillingAddressId(null)}
+                                className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                              />
+                            </div>
+                            <div className="ml-3">
+                              <span className="text-sm font-medium text-gray-900">
+                                Enter new address
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
                   <div>
                     <label
                       htmlFor="billing-first-name"
@@ -852,7 +1096,8 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                </div>
+                  </div>
+                </>
               )}
             </section>
 
