@@ -30,7 +30,7 @@ import { SearchInput } from "@/components/SearchInput";
 
 // Transform API categories to navigation structure
 const transformCategoriesToNavigation = (categories: Category[]) => {
-  const chartyCategories = categories.filter((cat) => cat.chart_only);
+  const chartyCategories = categories; // Show all categories in Charty section
   const innyCategories = categories.filter((cat) => !cat.chart_only);
 
   const transformToFeatured = (cats: Category[]) =>
