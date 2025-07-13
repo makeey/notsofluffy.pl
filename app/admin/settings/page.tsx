@@ -5,11 +5,52 @@ import { useTheme } from '@/components/theme-provider';
 import type { Theme } from '@/components/theme-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Moon, Sun, Monitor, AlertTriangle, Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { apiClient, SiteSetting } from '@/lib/api';
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const [siteSettings, setSiteSettings] = useState<SiteSetting[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.getSettings();
+      setSiteSettings(response.settings);
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSetting = async (key: string, value: string) => {
+    try {
+      setUpdating(key);
+      await apiClient.updateSetting(key, value);
+      await fetchSettings(); // Refresh settings
+    } catch (error) {
+      console.error('Failed to update setting:', error);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const getSettingValue = (key: string): string => {
+    const setting = siteSettings.find(s => s.key === key);
+    return setting?.value || '';
+  };
+
+  const isMaintenanceMode = getSettingValue('maintenance_mode') === 'true';
 
   const themeOptions = [
     {
@@ -91,6 +132,73 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Site Management */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Site Management
+            </CardTitle>
+            <CardDescription>
+              Control site-wide settings and maintenance mode
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <Label className="text-base font-medium">Maintenance Mode</Label>
+              <p className="text-sm text-muted-foreground mb-4">
+                When enabled, the site will display a &quot;Coming Soon&quot; page to all visitors except admins.
+              </p>
+              
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <AlertTriangle className={`h-5 w-5 ${isMaintenanceMode ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                  <div>
+                    <div className="font-medium">
+                      {isMaintenanceMode ? 'Maintenance Mode Active' : 'Site Online'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {isMaintenanceMode 
+                        ? 'Only admins can access the site' 
+                        : 'Site is available to all visitors'
+                      }
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => updateSetting('maintenance_mode', isMaintenanceMode ? 'false' : 'true')}
+                  disabled={updating === 'maintenance_mode' || loading}
+                  variant={isMaintenanceMode ? 'default' : 'outline'}
+                  className={isMaintenanceMode ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                >
+                  {updating === 'maintenance_mode' 
+                    ? 'Updating...' 
+                    : isMaintenanceMode 
+                      ? 'Disable Maintenance' 
+                      : 'Enable Maintenance'
+                  }
+                </Button>
+              </div>
+              
+              {isMaintenanceMode && (
+                <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <AlertTriangle className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-medium text-orange-800 dark:text-orange-200">
+                        Maintenance Mode is Active
+                      </p>
+                      <p className="text-orange-700 dark:text-orange-300 mt-1">
+                        All visitors will see the &quot;Coming Soon&quot; page. Only administrators can access the site normally.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

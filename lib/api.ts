@@ -580,6 +580,20 @@ export interface DiscountCodeUsage {
   created_at: string;
 }
 
+// Settings interfaces
+export interface SiteSetting {
+  id: number;
+  key: string;
+  value: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SiteSettingsResponse {
+  settings: SiteSetting[];
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -1501,6 +1515,18 @@ class ApiClient {
     
     return !!(accessToken && this.isValidTokenFormat(accessToken) && 
               refreshToken && this.isValidTokenFormat(refreshToken));
+  }
+
+  // Admin Settings Management
+  async getSettings(): Promise<SiteSettingsResponse> {
+    return this.request<SiteSettingsResponse>('/api/admin/settings');
+  }
+
+  async updateSetting(key: string, value: string): Promise<SiteSetting> {
+    return this.request<SiteSetting>(`/api/admin/settings/${key}`, {
+      method: 'PUT',
+      body: JSON.stringify({ value }),
+    });
   }
 }
 
