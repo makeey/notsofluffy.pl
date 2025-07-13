@@ -129,7 +129,7 @@ export function Header() {
                 className="relative -m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
               >
                 <span className="absolute -inset-0.5" />
-                <span className="sr-only">Close menu</span>
+                <span className="sr-only">Zamknij menu</span>
                 <XMarkIcon aria-hidden="true" className="size-6" />
               </button>
             </div>
@@ -373,7 +373,7 @@ export function Header() {
                         onClick={() => setMobileMenuOpen(true)}
                         className="-ml-2 p-2 text-white"
                       >
-                        <span className="sr-only">Open menu</span>
+                        <span className="sr-only">Otwórz menu</span>
                         <Bars3Icon aria-hidden="true" className="size-6" />
                       </button>
 
@@ -501,7 +501,7 @@ export function Header() {
             href="/products"
             className="mt-8 inline-block rounded-md border border-transparent bg-white px-8 py-3 text-base font-medium text-gray-900 hover:bg-gray-100"
           >
-            Shop New Arrivals
+            Nowości w sklepie
           </Link>
         </div>
       </div>

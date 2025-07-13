@@ -136,9 +136,9 @@ export default function ProductDetailPage() {
 
   const getStockDisplayText = (size: SizeResponse): string => {
     if (!size.use_stock) return "";
-    if (size.available_stock <= 0) return "Out of Stock";
-    if (size.available_stock <= 5) return `Low Stock (${size.available_stock})`;
-    return `In Stock (${size.available_stock})`;
+    if (size.available_stock <= 0) return "Brak w magazynie";
+    if (size.available_stock <= 5) return `Mała ilość (${size.available_stock})`;
+    return `W magazynie (${size.available_stock})`;
   };
 
   const getStockDisplayColor = (size: SizeResponse): string => {
@@ -172,10 +172,10 @@ export default function ProductDetailPage() {
       });
       
       // Show success message (you could use a toast here)
-      alert('Item added to cart successfully!');
+      alert('Produkt dodano do koszyka!');
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      alert('Failed to add item to cart. Please try again.');
+      alert('Nie udało się dodać produktu do koszyka. Spróbuj ponownie.');
     } finally {
       setAddingToCart(false);
     }
@@ -210,8 +210,8 @@ export default function ProductDetailPage() {
         <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-            <p className="text-gray-600">{error || "Product not found"}</p>
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Błąd</h1>
+            <p className="text-gray-600">{error || "Produkt nie znaleziony"}</p>
           </div>
         </div>
         <Footer />
@@ -229,14 +229,14 @@ export default function ProductDetailPage() {
             href="/" 
             className="text-gray-500 hover:text-gray-700 transition-colors"
           >
-            Home
+            Główna
           </Link>
           <span className="mx-2 text-gray-400">/</span>
           <Link 
             href="/products" 
             className="text-gray-500 hover:text-gray-700 transition-colors"
           >
-            Products
+            Produkty
           </Link>
           <span className="mx-2 text-gray-400">/</span>
           <span className="text-gray-900 font-medium">{data.product.name}</span>
@@ -248,7 +248,7 @@ export default function ProductDetailPage() {
           className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
           <ChevronLeftIcon className="h-5 w-5 mr-1" />
-          Back to Products
+          Powrót do produktów
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -306,7 +306,7 @@ export default function ProductDetailPage() {
             {data.variants.length > 0 && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Color
+                  Kolor
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   {data.variants.map((variant) => (
@@ -346,7 +346,7 @@ export default function ProductDetailPage() {
             {/* Size Selection */}
             {data.sizes.length > 0 && (
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Size</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-3">Rozmiar</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {data.sizes.map((size) => {
                     const isAvailable = isStockAvailable(size);
@@ -400,7 +400,7 @@ export default function ProductDetailPage() {
             {data.product.additional_services && data.product.additional_services.length > 0 && (
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Additional Services
+                  Dodatkowe usługi
                 </h3>
                 <div className="space-y-2">
                   {data.product.additional_services.map((service) => (
@@ -446,7 +446,7 @@ export default function ProductDetailPage() {
 
             {/* Quantity Selector */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Quantity</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-3">Ilość</h3>
               <div className="flex items-center space-x-3">
                 <button
                   onClick={decrementQuantity}
@@ -474,8 +474,8 @@ export default function ProductDetailPage() {
               {selectedSize && selectedSize.use_stock && (
                 <p className="text-sm text-gray-500 mt-2">
                   {selectedSize.available_stock > 0 
-                    ? `${selectedSize.available_stock} available`
-                    : "Out of stock"
+                    ? `${selectedSize.available_stock} dostępne`
+                    : "Brak w magazynie"
                   }
                 </p>
               )}
@@ -485,7 +485,7 @@ export default function ProductDetailPage() {
             <div className="border-t pt-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-sm text-gray-500">Total Price</p>
+                  <p className="text-sm text-gray-500">Całkowita cena</p>
                   <p className="text-3xl font-bold text-gray-900">
                     ${calculatePrice().toFixed(2)}
                   </p>
@@ -502,30 +502,30 @@ export default function ProductDetailPage() {
                 }`}
               >
                 {addingToCart 
-                  ? "Adding to Cart..." 
+                  ? "Dodawanie do koszyka..." 
                   : !selectedVariant
-                    ? "Select Color to Continue"
+                    ? "Wybierz kolor, aby kontynuować"
                     : !selectedSize
-                      ? "Select Size to Continue"
+                      ? "Wybierz rozmiar, aby kontynuować"
                       : selectedSize && !isStockAvailable(selectedSize)
-                        ? "Out of Stock"
-                        : "Add to Cart"
+                        ? "Brak w magazynie"
+                        : "Dodaj do koszyka"
                 }
               </button>
 
               {!selectedVariant && (
                 <p className="text-sm text-gray-500 mt-2">
-                  Please select a color variant
+                  Proszę wybrać kolor
                 </p>
               )}
               {!selectedSize && selectedVariant && (
                 <p className="text-sm text-gray-500 mt-2">
-                  Please select a size
+                  Proszę wybrać rozmiar
                 </p>
               )}
               {selectedSize && !isStockAvailable(selectedSize) && (
                 <p className="text-sm text-red-600 mt-2">
-                  This size is currently out of stock
+                  Ten rozmiar jest obecnie niedostępny
                 </p>
               )}
             </div>

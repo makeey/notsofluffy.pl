@@ -63,7 +63,7 @@ export default function ProfilePage() {
         phone: profileData.phone || '',
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load profile');
+      setError(err instanceof Error ? err.message : 'Nie udało się załadować profilu');
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function ProfilePage() {
       setIsEditingProfile(false);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      setError(err instanceof Error ? err.message : 'Nie udało się zaktualizować profilu');
     }
   };
 
@@ -112,7 +112,7 @@ export default function ProfilePage() {
       setEditingAddressId(null);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save address');
+      setError(err instanceof Error ? err.message : 'Nie udało się zapisać adresu');
     }
   };
 
@@ -145,7 +145,7 @@ export default function ProfilePage() {
       await fetchProfile();
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete address');
+      setError(err instanceof Error ? err.message : 'Nie udało się usunąć adresu');
     }
   };
 
@@ -155,7 +155,7 @@ export default function ProfilePage() {
       await fetchProfile();
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to set default address');
+      setError(err instanceof Error ? err.message : 'Nie udało się ustawić domyślnego adresu');
     }
   };
 

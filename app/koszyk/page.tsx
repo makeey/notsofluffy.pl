@@ -244,7 +244,7 @@ export default function CartPage() {
                                 disabled={isUpdating}
                                 className="-m-2 inline-flex p-2 text-gray-400 hover:text-gray-500 disabled:opacity-50"
                               >
-                                <span className="sr-only">Remove</span>
+                                <span className="sr-only">Usuń</span>
                                 <XMarkIcon aria-hidden="true" className="size-5" />
                               </button>
                             </div>
@@ -344,7 +344,7 @@ export default function CartPage() {
                           disabled={discountLoading}
                           className="text-sm text-red-600 hover:text-red-500 disabled:opacity-50"
                         >
-                          Remove
+                          Usuń
                         </button>
                       </div>
                     </div>
@@ -398,13 +398,13 @@ export default function CartPage() {
                   href="/checkout"
                   className="w-full flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
                 >
-                  Proceed to Checkout
+                  Przejdź do kasy
                 </Link>
                 <Link
                   href="/products"
                   className="w-full flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-3 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50"
                 >
-                  Continue Shopping
+                  Kontynuuj zakupy
                 </Link>
               </div>
             </section>

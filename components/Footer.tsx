@@ -33,7 +33,7 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-8 xl:col-span-2">
             <div className="space-y-12 md:grid md:grid-cols-2 md:gap-8 md:space-y-0">
               <div>
-                <h3 className="text-sm font-medium text-white">Shop</h3>
+                <h3 className="text-sm font-medium text-white">Sklep</h3>
                 <ul role="list" className="mt-6 space-y-6">
                   <li className="text-sm">
                     <Link href="/products?category=charty" className="text-gray-300 hover:text-white">

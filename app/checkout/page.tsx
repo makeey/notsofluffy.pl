@@ -291,16 +291,16 @@ export default function CheckoutPage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Your cart is empty
+              Twój koszyk jest pusty
             </h1>
             <p className="text-gray-600 mb-8">
-              Add some items to your cart before proceeding to checkout.
+              Dodaj produkty do koszyka przed przejściem do kasy.
             </p>
             <button
               onClick={() => router.push("/products")}
               className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-              Continue Shopping
+              Kontynuuj zakupy
             </button>
           </div>
         </div>
@@ -324,7 +324,7 @@ export default function CheckoutPage() {
       />
 
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-x-16 lg:grid-cols-2 lg:px-8 xl:gap-x-48">
-        <h1 className="sr-only">Order information</h1>
+        <h1 className="sr-only">Informacje o zamówieniu</h1>
 
         <section
           aria-labelledby="summary-heading"
@@ -335,7 +335,7 @@ export default function CheckoutPage() {
               id="summary-heading"
               className="text-lg font-medium text-gray-900"
             >
-              Order summary
+              Podsumowanie zamówienia
             </h2>
 
             <ul
@@ -365,10 +365,10 @@ export default function CheckoutPage() {
                         {item.variant?.color?.custom && " (Custom)"}
                       </p>
                       <p className="text-gray-500">{item.size?.name}</p>
-                      <p className="text-gray-500">Quantity: {item.quantity}</p>
+                      <p className="text-gray-500">Ilość: {item.quantity}</p>
                       {item.additional_services && item.additional_services.length > 0 && (
                         <p className="text-gray-500">
-                          Services: {item.additional_services.map(s => s.name).join(', ')}
+                          Usługi: {item.additional_services.map(s => s.name).join(', ')}
                         </p>
                       )}
                     </div>
@@ -382,14 +382,14 @@ export default function CheckoutPage() {
 
             <dl className="hidden space-y-6 border-t border-gray-200 pt-6 text-sm font-medium text-gray-900 lg:block">
               <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Subtotal</dt>
+                <dt className="text-gray-600">Suma częściowa</dt>
                 <dd>${(cart.subtotal || 0).toFixed(2)}</dd>
               </div>
 
               {cart.applied_discount && (
                 <div className="flex items-center justify-between text-green-600">
                   <dt>
-                    Discount ({cart.applied_discount.code})
+                    Zniżka ({cart.applied_discount.code})
                     {cart.applied_discount.discount_type === 'percentage' && 
                       ` (${cart.applied_discount.discount_value}%)`}
                   </dt>
@@ -398,17 +398,17 @@ export default function CheckoutPage() {
               )}
 
               <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Shipping</dt>
-                <dd>Free</dd>
+                <dt className="text-gray-600">Dostawa</dt>
+                <dd>Bezpłatna</dd>
               </div>
 
               <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Taxes</dt>
-                <dd>Calculated at checkout</dd>
+                <dt className="text-gray-600">Podatki</dt>
+                <dd>Obliczane przy kasie</dd>
               </div>
 
               <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                <dt className="text-base">Total</dt>
+                <dt className="text-base">Suma</dt>
                 <dd className="text-base">${cart.total_price.toFixed(2)}</dd>
               </div>
             </dl>
@@ -417,7 +417,7 @@ export default function CheckoutPage() {
               <div className="relative z-10 border-t border-gray-200 bg-white px-4 sm:px-6">
                 <div className="mx-auto max-w-lg">
                   <PopoverButton className="flex w-full items-center py-6 font-medium">
-                    <span className="mr-auto text-base">Total</span>
+                    <span className="mr-auto text-base">Suma</span>
                     <span className="mr-2 text-base">${cart.total_price.toFixed(2)}</span>
                     <ChevronUpIcon
                       aria-hidden="true"
@@ -437,14 +437,14 @@ export default function CheckoutPage() {
               >
                 <dl className="mx-auto max-w-lg space-y-6">
                   <div className="flex items-center justify-between">
-                    <dt className="text-gray-600">Subtotal</dt>
+                    <dt className="text-gray-600">Suma częściowa</dt>
                     <dd>${(cart.subtotal || 0).toFixed(2)}</dd>
                   </div>
 
                   {cart.applied_discount && (
                     <div className="flex items-center justify-between text-green-600">
                       <dt>
-                        Discount ({cart.applied_discount.code})
+                        Zniżka ({cart.applied_discount.code})
                         {cart.applied_discount.discount_type === 'percentage' && 
                           ` (${cart.applied_discount.discount_value}%)`}
                       </dt>
@@ -453,13 +453,13 @@ export default function CheckoutPage() {
                   )}
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-gray-600">Shipping</dt>
-                    <dd>Free</dd>
+                    <dt className="text-gray-600">Dostawa</dt>
+                    <dd>Bezpłatna</dd>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-gray-600">Taxes</dt>
-                    <dd>Calculated at checkout</dd>
+                    <dt className="text-gray-600">Podatki</dt>
+                    <dd>Obliczane przy kasie</dd>
                   </div>
                 </dl>
               </PopoverPanel>
@@ -499,7 +499,7 @@ export default function CheckoutPage() {
                     htmlFor="email-address"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    Email address
+                    Adres e-mail
                   </label>
                   <div className="mt-2">
                     <input
@@ -524,7 +524,7 @@ export default function CheckoutPage() {
                     htmlFor="phone-number"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    Phone number
+                    Numer telefonu
                   </label>
                   <div className="mt-2">
                     <input
@@ -551,14 +551,14 @@ export default function CheckoutPage() {
                 id="shipping-heading"
                 className="text-lg font-medium text-gray-900"
               >
-                Shipping address
+                Adres dostawy
               </h2>
 
               {/* Saved Addresses Selector */}
               {user && savedAddresses.length > 0 && (
                 <div className="mt-6">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Select from saved addresses
+                    Wybierz z zapisanych adresów
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {savedAddresses.map((address) => (
@@ -621,7 +621,7 @@ export default function CheckoutPage() {
                         </div>
                         <div className="ml-3">
                           <span className="text-sm font-medium text-gray-900">
-                            Enter new address
+                            Wprowadź nowy adres
                           </span>
                         </div>
                       </div>
@@ -636,7 +636,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-first-name"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    First name
+                    Imię
                   </label>
                   <div className="mt-2">
                     <input
@@ -661,7 +661,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-last-name"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    Last name
+                    Nazwisko
                   </label>
                   <div className="mt-2">
                     <input
@@ -686,7 +686,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-company"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    Company (optional)
+                    Firma (opcjonalne)
                   </label>
                   <div className="mt-2">
                     <input
@@ -705,7 +705,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-address"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    Address
+                    Adres
                   </label>
                   <div className="mt-2">
                     <input
@@ -730,7 +730,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-apartment"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    Apartment, suite, etc. (optional)
+                    Mieszkanie, lokal, itp. (opcjonalne)
                   </label>
                   <div className="mt-2">
                     <input
@@ -749,7 +749,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-city"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    City
+                    Miasto
                   </label>
                   <div className="mt-2">
                     <input
@@ -774,7 +774,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-region"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    State / Province
+                    Województwo
                   </label>
                   <div className="mt-2">
                     <input
@@ -799,7 +799,7 @@ export default function CheckoutPage() {
                     htmlFor="shipping-postal-code"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    Postal code
+                    Kod pocztowy
                   </label>
                   <div className="mt-2">
                     <input
@@ -827,7 +827,7 @@ export default function CheckoutPage() {
                 id="billing-heading"
                 className="text-lg font-medium text-gray-900"
               >
-                Billing information
+                Informacje do faktury
               </h2>
 
               <div className="mt-6 flex gap-3">
@@ -867,7 +867,7 @@ export default function CheckoutPage() {
                   htmlFor="same-as-shipping"
                   className="text-sm/6 font-medium text-gray-900"
                 >
-                  Same as shipping information
+                  Takie same jak adres dostawy
                 </label>
               </div>
 
@@ -877,7 +877,7 @@ export default function CheckoutPage() {
                   {user && savedAddresses.length > 0 && (
                     <div className="mt-6">
                       <label className="block text-sm font-medium text-gray-700 mb-3">
-                        Select from saved addresses for billing
+                        Wybierz z zapisanych adresów do faktury
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {savedAddresses.map((address) => (
@@ -955,7 +955,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-first-name"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      First name
+                      Imię
                     </label>
                     <div className="mt-2">
                       <input
@@ -980,7 +980,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-last-name"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      Last name
+                      Nazwisko
                     </label>
                     <div className="mt-2">
                       <input
@@ -1005,7 +1005,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-company"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      Company (optional)
+                      Firma (opcjonalne)
                     </label>
                     <div className="mt-2">
                       <input
@@ -1024,7 +1024,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-address"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      Address
+                      Adres
                     </label>
                     <div className="mt-2">
                       <input
@@ -1049,7 +1049,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-apartment"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      Apartment, suite, etc. (optional)
+                      Mieszkanie, lokal, itp. (opcjonalne)
                     </label>
                     <div className="mt-2">
                       <input
@@ -1068,7 +1068,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-city"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      City
+                      Miasto
                     </label>
                     <div className="mt-2">
                       <input
@@ -1093,7 +1093,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-region"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      State / Province
+                      Województwo
                     </label>
                     <div className="mt-2">
                       <input
@@ -1118,7 +1118,7 @@ export default function CheckoutPage() {
                       htmlFor="billing-postal-code"
                       className="block text-sm/6 font-medium text-gray-700"
                     >
-                      Postal code
+                      Kod pocztowy
                     </label>
                     <div className="mt-2">
                       <input
@@ -1148,7 +1148,7 @@ export default function CheckoutPage() {
                 id="invoice-heading"
                 className="text-lg font-medium text-gray-900"
               >
-                Invoice information
+                Informacje do faktury
               </h2>
 
               <div className="mt-6 flex gap-3">
@@ -1188,7 +1188,7 @@ export default function CheckoutPage() {
                   htmlFor="requires-invoice"
                   className="text-sm/6 font-medium text-gray-900"
                 >
-                  Potrzebuje faktury
+                  Potrzebuję faktury
                 </label>
               </div>
 
@@ -1198,7 +1198,7 @@ export default function CheckoutPage() {
                     htmlFor="nip"
                     className="block text-sm/6 font-medium text-gray-700"
                   >
-                    NIP (Tax ID)
+                    NIP (Numer identyfikacji podatkowej)
                   </label>
                   <div className="mt-2">
                     <input
@@ -1216,7 +1216,7 @@ export default function CheckoutPage() {
                       <p className="mt-1 text-sm text-red-600">{errors.nip}</p>
                     )}
                     <p className="mt-2 text-sm text-gray-500">
-                      Enter your 10-digit Polish tax identification number (NIP)
+                      Wprowadź swój 10-cyfrowy numer identyfikacji podatkowej (NIP)
                     </p>
                   </div>
                 </div>
@@ -1228,7 +1228,7 @@ export default function CheckoutPage() {
                 id="notes-heading"
                 className="text-lg font-medium text-gray-900"
               >
-                Order notes (optional)
+                Uwagi do zamówienia (opcjonalne)
               </h2>
 
               <div className="mt-6">
@@ -1236,7 +1236,7 @@ export default function CheckoutPage() {
                   htmlFor="notes"
                   className="block text-sm/6 font-medium text-gray-700"
                 >
-                  Special instructions for your order
+                  Specjalne instrukcje do zamówienia
                 </label>
                 <div className="mt-2">
                   <textarea
@@ -1246,7 +1246,7 @@ export default function CheckoutPage() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-                    placeholder="Any special instructions for your order..."
+                    placeholder="Jakiekolwiek specjalne instrukcje do zamówienia..."
                   />
                 </div>
               </div>
@@ -1258,10 +1258,10 @@ export default function CheckoutPage() {
                 disabled={loading}
                 className="w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 focus:outline-none sm:order-last sm:ml-6 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Processing..." : "Place Order"}
+                {loading ? "Przetwarzanie..." : "Złóż zamówienie"}
               </button>
               <p className="mt-4 text-center text-sm text-gray-500 sm:mt-0 sm:text-left">
-                Review your order before placing it.
+                Sprawdź zamówienie przed jego złożeniem.
               </p>
             </div>
           </div>

@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : 'Logowanie nieudane');
     } finally {
       setIsLoading(false);
     }
@@ -42,14 +42,14 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
-            Sign in to your account
+            Zaloguj się do swojego konta
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email-address" className="sr-only">
-                Email address
+                Adres e-mail
               </label>
               <input
                 id="email-address"
@@ -58,14 +58,14 @@ export default function LoginPage() {
                 autoComplete="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-t-md focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Adres e-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                Hasło
               </label>
               <input
                 id="password"
@@ -74,7 +74,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-b-md focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Hasło"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -91,7 +91,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 transition-colors"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Logowanie...' : 'Zaloguj się'}
             </button>
           </div>
         </form>

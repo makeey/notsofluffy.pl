@@ -16,11 +16,11 @@ import {
 } from '@heroicons/react/24/outline';
 
 const SORT_OPTIONS = [
-  { value: 'relevance', label: 'Relevance' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'newest', label: 'Newest First' },
-  { value: 'name', label: 'Name A-Z' },
+  { value: 'relevance', label: 'Trafność' },
+  { value: 'price_asc', label: 'Cena: od najniższej' },
+  { value: 'price_desc', label: 'Cena: od najwyższej' },
+  { value: 'newest', label: 'Najnowsze pierwsze' },
+  { value: 'name', label: 'Nazwa A-Z' },
 ];
 
 export default function SearchPage() {
@@ -91,7 +91,7 @@ export default function SearchPage() {
       });
       setSearchResults(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Search failed');
+      setError(err instanceof Error ? err.message : 'Wyszukiwanie nie powiodło się');
       setSearchResults(null);
     } finally {
       setLoading(false);
@@ -146,7 +146,7 @@ export default function SearchPage() {
         <div className="py-8">
           {/* Search Header */}
           <div className="border-b border-gray-200 pb-6">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Search</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Szukaj</h1>
             
             {/* Search Form */}
             <div className="mt-6">
@@ -165,7 +165,7 @@ export default function SearchPage() {
             <div className="flex items-center justify-between border-b border-gray-200 pt-6 pb-4">
               <div className="flex items-center space-x-4">
                 <h2 className="text-xl font-medium text-gray-900">
-                  {searchResults.total} {searchResults.total === 1 ? 'result' : 'results'}
+                  {searchResults.total} {searchResults.total === 1 ? 'wynik' : searchResults.total < 5 ? 'wyniki' : 'wyników'}
                   {searchQuery && ` for "${searchQuery}"`}
                 </h2>
                 
@@ -175,7 +175,7 @@ export default function SearchPage() {
                     onClick={clearFilters}
                     className="text-sm text-indigo-600 hover:text-indigo-500"
                   >
-                    Clear filters
+                    Wyczyść filtry
                   </button>
                 )}
               </div>
@@ -187,7 +187,7 @@ export default function SearchPage() {
                   className="inline-flex items-center lg:hidden"
                 >
                   <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
-                  Filters
+                  Filtry
                 </button>
 
                 {/* Sort Dropdown */}
@@ -212,7 +212,7 @@ export default function SearchPage() {
             {/* Filters Sidebar */}
             <div className="hidden lg:block">
               <div className="py-6">
-                <h3 className="text-sm font-medium text-gray-900 mb-4">Categories</h3>
+                <h3 className="text-sm font-medium text-gray-900 mb-4">Kategorie</h3>
                 <div className="space-y-3">
                   {categories.map((category) => (
                     <div key={category.id} className="flex items-center">
@@ -247,7 +247,7 @@ export default function SearchPage() {
                     onClick={() => performSearch(searchQuery, selectedCategories, sortBy, currentPage)}
                     className="text-indigo-600 hover:text-indigo-500"
                   >
-                    Try again
+                    Spróbuj ponownie
                   </button>
                 </div>
               )}
@@ -257,9 +257,9 @@ export default function SearchPage() {
                   {searchResults.products.length === 0 ? (
                     <div className="text-center py-12">
                       <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-gray-400" />
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">Nie znaleziono produktów</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        {searchResults.suggestion || "Try different keywords or browse our categories"}
+                        {searchResults.suggestion || "Spróbuj innych słów kluczowych lub przeglądaj nasze kategorie"}
                       </p>
                     </div>
                   ) : (
@@ -281,7 +281,7 @@ export default function SearchPage() {
                                 <div className="flex h-full w-full items-center justify-center bg-gray-200">
                                   <div className="text-center">
                                     <div className="text-4xl text-gray-400 mb-2">📦</div>
-                                    <p className="text-sm text-gray-500">No image</p>
+                                    <p className="text-sm text-gray-500">Brak zdjęcia</p>
                                   </div>
                                 </div>
                               )}
@@ -300,7 +300,7 @@ export default function SearchPage() {
                                 )}
                               </div>
                               <p className="text-sm font-medium text-gray-900">
-                                {product.min_price ? `from ${product.min_price.toFixed(2)} zł` : 'Price on request'}
+                                {product.min_price ? `od ${product.min_price.toFixed(2)} zł` : 'Cena na żądanie'}
                               </p>
                             </div>
                           </div>
@@ -316,29 +316,29 @@ export default function SearchPage() {
                               disabled={currentPage <= 1}
                               className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                             >
-                              Previous
+                              Poprzednia
                             </button>
                             <button
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={currentPage >= Math.ceil(searchResults.total / 12)}
                               className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                             >
-                              Next
+                              Następna
                             </button>
                           </div>
                           
                           <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                             <div>
                               <p className="text-sm text-gray-700">
-                                Showing{' '}
+                                Wyświetlanie{' '}
                                 <span className="font-medium">{(currentPage - 1) * 12 + 1}</span>
-                                {' '}to{' '}
+                                {' '}do{' '}
                                 <span className="font-medium">
                                   {Math.min(currentPage * 12, searchResults.total)}
                                 </span>
-                                {' '}of{' '}
+                                {' '}z{' '}
                                 <span className="font-medium">{searchResults.total}</span>
-                                {' '}results
+                                {' '}wyników
                               </p>
                             </div>
                             <div>
@@ -348,7 +348,7 @@ export default function SearchPage() {
                                   disabled={currentPage <= 1}
                                   className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                                 >
-                                  Previous
+                                  Poprzednia
                                 </button>
                                 
                                 {/* Page numbers */}
@@ -374,7 +374,7 @@ export default function SearchPage() {
                                   disabled={currentPage >= Math.ceil(searchResults.total / 12)}
                                   className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
                                 >
-                                  Next
+                                  Następna
                                 </button>
                               </nav>
                             </div>
