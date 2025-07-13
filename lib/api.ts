@@ -585,6 +585,18 @@ class ApiClient {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
+    this.initializeCleanup();
+  }
+
+  private initializeCleanup() {
+    // Clean up any invalid tokens on initialization
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token');
+      if (token && !this.isValidTokenFormat(token)) {
+        console.warn('Invalid token detected on initialization, clearing tokens');
+        this.clearTokens();
+      }
+    }
   }
 
   private async request<T>(
@@ -600,8 +612,13 @@ class ApiClient {
       ...((options.headers as Record<string, string>) || {}),
     };
 
-    if (token) {
+    // Validate token format before sending
+    if (token && this.isValidTokenFormat(token)) {
       headers.Authorization = `Bearer ${token}`;
+    } else if (token) {
+      // Clear invalid token
+      console.warn('Invalid token format detected, clearing tokens');
+      this.clearTokens();
     }
 
     const response = await fetch(url, {
@@ -637,6 +654,13 @@ class ApiClient {
         return false;
       }
 
+      // Validate refresh token format
+      if (!this.isValidTokenFormat(refreshToken)) {
+        console.warn('Invalid refresh token format, clearing tokens');
+        this.clearTokens();
+        return false;
+      }
+
       const response = await this.refreshToken(refreshToken);
       
       // Update stored tokens
@@ -646,17 +670,43 @@ class ApiClient {
       return true;
     } catch (error) {
       console.error('Token refresh failed:', error);
+      // Clear tokens on refresh failure to prevent retry loops
+      this.clearTokens();
       return false;
     }
   }
 
-  private handleAuthFailure() {
-    // Clear stored tokens
+  private isValidTokenFormat(token: string): boolean {
+    // Basic JWT format validation (3 parts separated by dots)
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    
+    // Check if each part is base64-encoded (basic check)
+    try {
+      parts.forEach(part => {
+        if (!part || part.length === 0) throw new Error('Empty part');
+        // Try to decode base64 (will throw if invalid)
+        atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private clearTokens() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+  }
+
+  private handleAuthFailure() {
+    // Clear stored tokens
+    this.clearTokens();
     
-    // Redirect to login page
-    if (typeof window !== 'undefined') {
+    // Only redirect if we're not already on login/register page
+    if (typeof window !== 'undefined' && 
+        !window.location.pathname.includes('/login') && 
+        !window.location.pathname.includes('/register')) {
       window.location.href = '/login';
     }
   }
@@ -1437,6 +1487,20 @@ class ApiClient {
 
   async getDiscountCodeUsage(id: number): Promise<DiscountCodeUsage[]> {
     return this.request<DiscountCodeUsage[]>(`/api/admin/discount-codes/${id}/usage`);
+  }
+
+  // Public method to clear tokens manually
+  public clearAuthTokens(): void {
+    this.clearTokens();
+  }
+
+  // Public method to check if user has valid tokens
+  public hasValidTokens(): boolean {
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+    
+    return !!(accessToken && this.isValidTokenFormat(accessToken) && 
+              refreshToken && this.isValidTokenFormat(refreshToken));
   }
 }
 

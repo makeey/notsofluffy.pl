@@ -264,9 +264,9 @@ function ProductsContent() {
                     name="category[]"
                     value={category.name}
                     type="checkbox"
-                    checked={selectedCategories.includes(category.name)}
+                    checked={selectedCategories.includes(category.slug)}
                     onChange={(e) =>
-                      handleCategoryChange(category.name, e.target.checked)
+                      handleCategoryChange(category.slug, e.target.checked)
                     }
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                   />

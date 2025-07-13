@@ -46,8 +46,17 @@ export function CartProvider({ children }: CartProviderProps) {
       setCartCount(countData.count);
     } catch (err) {
       console.error('Error fetching cart:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch cart');
-      // Set defaults for error state
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch cart';
+      
+      // Don't show "Invalid token" errors to users, just log them
+      if (errorMessage.includes('Invalid token') || errorMessage.includes('Authentication failed')) {
+        console.warn('Cart fetch failed due to authentication issue, using empty cart for guest user');
+        setError(null); // Don't show error to user
+      } else {
+        setError(errorMessage);
+      }
+      
+      // Set defaults for error state (empty cart for guest users)
       setCart({ items: [], total_items: 0, subtotal: 0, discount_amount: 0, total_price: 0 });
       setCartCount(0);
     } finally {
