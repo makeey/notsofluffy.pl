@@ -179,8 +179,24 @@ export default function OrdersPage() {
                       </div>
                       <div className="max-md:flex max-md:justify-between max-md:py-4 max-md:first:pt-0 max-md:last:pb-0">
                         <dt className="font-medium text-gray-900">Łączna kwota</dt>
-                        <dd className="font-medium text-gray-900 md:mt-1">
-                          {order.total_amount.toFixed(2)} zł
+                        <dd className="md:mt-1">
+                          {order.discount_amount > 0 ? (
+                            <div className="text-right">
+                              <div className="text-sm text-gray-500 line-through">
+                                {order.subtotal.toFixed(2)} zł
+                              </div>
+                              <div className="font-medium text-gray-900">
+                                {order.total_amount.toFixed(2)} zł
+                              </div>
+                              <div className="text-xs text-green-600">
+                                Oszczędności: {order.discount_amount.toFixed(2)} zł
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="font-medium text-gray-900">
+                              {order.total_amount.toFixed(2)} zł
+                            </div>
+                          )}
                         </dd>
                       </div>
                       <div className="max-md:flex max-md:justify-between max-md:py-4 max-md:first:pt-0 max-md:last:pb-0">
@@ -197,13 +213,13 @@ export default function OrdersPage() {
                       </div>
                     </dl>
                     <div className="mt-6 space-y-4 sm:flex sm:space-y-0 sm:space-x-4 md:mt-0">
-                      <button
-                        onClick={() => {/* TODO: Implement order details view */}}
+                      <Link
+                        href={`/order/${order.id}`}
                         className="flex w-full items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden md:w-auto"
                       >
                         Zobacz zamówienie
                         <span className="sr-only">#{order.id}</span>
-                      </button>
+                      </Link>
                     </div>
                   </div>
 
