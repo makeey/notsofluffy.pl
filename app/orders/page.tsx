@@ -71,7 +71,7 @@ export default function OrdersPage() {
       setError(null);
     } catch (err) {
       console.error("Failed to fetch orders:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch orders");
+      setError(err instanceof Error ? err.message : "Nie udało się pobrać zamówień");
       setOrders([]);
     } finally {
       setLoading(false);

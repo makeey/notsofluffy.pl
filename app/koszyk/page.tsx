@@ -67,7 +67,7 @@ export default function CartPage() {
     setDiscountSuccess(null);
     try {
       await removeDiscount();
-      setDiscountSuccess("Discount removed successfully");
+      setDiscountSuccess("Rabat został usunięty pomyślnie");
     } catch (err) {
       // Error is handled by the context
       console.error('Failed to apply/remove discount:', err);
@@ -125,29 +125,29 @@ export default function CartPage() {
       <Header />
       <div className="mx-auto max-w-2xl px-4 pt-16 pb-24 sm:px-6 lg:max-w-7xl lg:px-8">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          Shopping Cart
+          Koszyk
         </h1>
 
         {isEmpty ? (
           <div className="mt-12 text-center">
             <h2 className="text-xl font-medium text-gray-900 mb-4">
-              Your cart is empty
+              Twój koszyk jest pusty
             </h2>
             <p className="text-gray-600 mb-8">
-              Add some items to your cart to continue shopping.
+              Dodaj produkty do koszyka, aby kontynuować zakupy.
             </p>
             <Link
               href="/products"
               className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             >
-              Continue Shopping
+              Kontynuuj zakupy
             </Link>
           </div>
         ) : (
           <div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
             <section aria-labelledby="cart-heading" className="lg:col-span-7">
               <h2 id="cart-heading" className="sr-only">
-                Items in your shopping cart
+                Produkty w koszyku
               </h2>
 
               <ul
@@ -191,7 +191,7 @@ export default function CartPage() {
                             )}
                             <div className="mt-1 flex text-sm">
                               <p className="text-gray-500">
-                                {item.variant?.color?.name || 'No color'}
+                                {item.variant?.color?.name || 'Bez koloru'}
                                 {item.variant?.color?.custom && " (Custom)"}
                               </p>
                               {item.size?.name && (
@@ -202,13 +202,13 @@ export default function CartPage() {
                             </div>
                             {item.size && (
                               <div className="mt-1 text-sm text-gray-500">
-                                <p>Size: A:{item.size.a}, B:{item.size.b}, C:{item.size.c}</p>
+                                <p>Rozmiar: A:{item.size.a}, B:{item.size.b}, C:{item.size.c}</p>
                                 <p>D:{item.size.d}, E:{item.size.e}, F:{item.size.f}</p>
                               </div>
                             )}
                             {item.additional_services && item.additional_services.length > 0 && (
                               <div className="mt-1 text-sm text-gray-500">
-                                <p>Services: {item.additional_services.map(s => s.name).join(', ')}</p>
+                                <p>Usługi: {item.additional_services.map(s => s.name).join(', ')}</p>
                               </div>
                             )}
                             <p className="mt-1 text-sm font-medium text-gray-900">
@@ -257,7 +257,7 @@ export default function CartPage() {
                               aria-hidden="true"
                               className="size-5 shrink-0 text-green-500"
                             />
-                            <span>In stock</span>
+                            <span>Dostępny</span>
                           </p>
                           <p className="text-sm font-medium text-gray-900">
                             Total: ${(item.total_price || 0).toFixed(2)}
@@ -279,18 +279,18 @@ export default function CartPage() {
                 id="summary-heading"
                 className="text-lg font-medium text-gray-900"
               >
-                Order summary
+                Podsumowanie zamówienia
               </h2>
 
               <dl className="mt-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <dt className="text-sm text-gray-600">Subtotal</dt>
+                  <dt className="text-sm text-gray-600">Wartość produktów</dt>
                   <dd className="text-sm font-medium text-gray-900">
                     ${(cart.subtotal || 0).toFixed(2)}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">
-                  <dt className="text-sm text-gray-600">Total Items</dt>
+                  <dt className="text-sm text-gray-600">Liczba produktów</dt>
                   <dd className="text-sm font-medium text-gray-900">
                     {cart.total_items || 0}
                   </dd>
@@ -301,7 +301,7 @@ export default function CartPage() {
                   {!cart.applied_discount ? (
                     <div className="space-y-2">
                       <label htmlFor="discount-code" className="text-sm font-medium text-gray-700">
-                        Discount code
+                        Kod rabatowy
                       </label>
                       <div className="flex space-x-2">
                         <input
@@ -309,7 +309,7 @@ export default function CartPage() {
                           id="discount-code"
                           value={discountCode}
                           onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                          placeholder="Enter code"
+                          placeholder="Wprowadź kod"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 sm:text-sm"
                           disabled={discountLoading}
                         />
@@ -319,7 +319,7 @@ export default function CartPage() {
                           disabled={!discountCode || discountLoading}
                           className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {discountLoading ? "Applying..." : "Apply"}
+                          {discountLoading ? "Aplikowanie..." : "Zastosuj"}
                         </button>
                       </div>
                       {discountError && (
@@ -333,7 +333,7 @@ export default function CartPage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-gray-700">Discount applied</p>
+                          <p className="text-sm font-medium text-gray-700">Rabat zastosowany</p>
                           <p className="text-sm text-gray-500">
                             {cart.applied_discount.code}: {cart.applied_discount.description}
                           </p>
@@ -354,7 +354,7 @@ export default function CartPage() {
                 {cart.applied_discount && (
                   <div className="flex items-center justify-between text-green-600">
                     <dt className="text-sm">
-                      Discount
+                      Rabat
                       {cart.applied_discount.discount_type === 'percentage' && 
                         ` (${cart.applied_discount.discount_value}%)`}
                     </dt>
@@ -365,7 +365,7 @@ export default function CartPage() {
                 )}
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="flex items-center text-sm text-gray-600">
-                    <span>Shipping estimate</span>
+                    <span>Szacunkowy koszt dostawy</span>
                     <Link
                       href="/shipping-info"
                       className="ml-2 shrink-0 text-gray-400 hover:text-gray-500"
@@ -380,12 +380,12 @@ export default function CartPage() {
                     </Link>
                   </dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    Calculated at checkout
+                    Obliczane przy kasie
                   </dd>
                 </div>
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="text-base font-medium text-gray-900">
-                    Order total
+                    Łączna kwota
                   </dt>
                   <dd className="text-base font-medium text-gray-900">
                     ${(cart.total_price || 0).toFixed(2)}

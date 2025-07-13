@@ -67,7 +67,7 @@ export default function OrderPage() {
         response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/orders/hash/${orderIdentifier}`)
           .then(res => {
             if (!res.ok) {
-              throw new Error('Order not found');
+              throw new Error('Zamówienie nie zostało znalezione');
             }
             return res.json();
           });
@@ -79,7 +79,7 @@ export default function OrderPage() {
       setOrder(response);
     } catch (err) {
       console.error("Failed to fetch order:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch order");
+      setError(err instanceof Error ? err.message : "Nie udało się pobrać zamówienia");
     } finally {
       setLoading(false);
     }

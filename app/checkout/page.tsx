@@ -112,45 +112,45 @@ export default function CheckoutPage() {
 
     // Email validation
     if (!email) {
-      newErrors.email = "Email is required";
+      newErrors.email = "Adres e-mail jest wymagany";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = "Wprowadź prawidłowy adres e-mail";
     }
 
     // Phone validation
     if (!phone) {
-      newErrors.phone = "Phone number is required";
+      newErrors.phone = "Numer telefonu jest wymagany";
     }
 
     // Shipping address validation
-    if (!shippingAddress.first_name) newErrors.shipping_first_name = "First name is required";
-    if (!shippingAddress.last_name) newErrors.shipping_last_name = "Last name is required";
-    if (!shippingAddress.address_line1) newErrors.shipping_address_line1 = "Address is required";
-    if (!shippingAddress.city) newErrors.shipping_city = "City is required";
-    if (!shippingAddress.state_province) newErrors.shipping_state_province = "State/Province is required";
-    if (!shippingAddress.postal_code) newErrors.shipping_postal_code = "Postal code is required";
-    if (!shippingAddress.country) newErrors.shipping_country = "Country is required";
+    if (!shippingAddress.first_name) newErrors.shipping_first_name = "Imię jest wymagane";
+    if (!shippingAddress.last_name) newErrors.shipping_last_name = "Nazwisko jest wymagane";
+    if (!shippingAddress.address_line1) newErrors.shipping_address_line1 = "Adres jest wymagany";
+    if (!shippingAddress.city) newErrors.shipping_city = "Miasto jest wymagane";
+    if (!shippingAddress.state_province) newErrors.shipping_state_province = "Województwo jest wymagane";
+    if (!shippingAddress.postal_code) newErrors.shipping_postal_code = "Kod pocztowy jest wymagany";
+    if (!shippingAddress.country) newErrors.shipping_country = "Kraj jest wymagany";
 
     // Billing address validation (if different from shipping)
     if (!sameAsShipping) {
-      if (!billingAddress.first_name) newErrors.billing_first_name = "First name is required";
-      if (!billingAddress.last_name) newErrors.billing_last_name = "Last name is required";
-      if (!billingAddress.address_line1) newErrors.billing_address_line1 = "Address is required";
-      if (!billingAddress.city) newErrors.billing_city = "City is required";
-      if (!billingAddress.state_province) newErrors.billing_state_province = "State/Province is required";
-      if (!billingAddress.postal_code) newErrors.billing_postal_code = "Postal code is required";
-      if (!billingAddress.country) newErrors.billing_country = "Country is required";
+      if (!billingAddress.first_name) newErrors.billing_first_name = "Imię jest wymagane";
+      if (!billingAddress.last_name) newErrors.billing_last_name = "Nazwisko jest wymagane";
+      if (!billingAddress.address_line1) newErrors.billing_address_line1 = "Adres jest wymagany";
+      if (!billingAddress.city) newErrors.billing_city = "Miasto jest wymagane";
+      if (!billingAddress.state_province) newErrors.billing_state_province = "Województwo jest wymagane";
+      if (!billingAddress.postal_code) newErrors.billing_postal_code = "Kod pocztowy jest wymagany";
+      if (!billingAddress.country) newErrors.billing_country = "Kraj jest wymagany";
     }
 
     // Invoice validation
     if (requiresInvoice) {
       if (!nip.trim()) {
-        newErrors.nip = "NIP is required when invoice is requested";
+        newErrors.nip = "NIP jest wymagany gdy żądana jest faktura";
       } else {
         // Basic NIP validation - 10 digits
         const nipDigits = nip.replace(/\D/g, '');
         if (nipDigits.length !== 10) {
-          newErrors.nip = "NIP must be 10 digits";
+          newErrors.nip = "NIP musi mieć 10 cyfr";
         }
       }
     }
@@ -167,7 +167,7 @@ export default function CheckoutPage() {
     }
 
     if (!cart || !cart.items || cart.items.length === 0) {
-      setError("Your cart is empty");
+      setError("Twój koszyk jest pusty");
       return;
     }
 
@@ -203,7 +203,7 @@ export default function CheckoutPage() {
       }
     } catch (err) {
       console.error("Order creation failed:", err);
-      setError(err instanceof Error ? err.message : "Failed to create order");
+      setError(err instanceof Error ? err.message : "Nie udało się utworzyć zamówienia");
     } finally {
       setLoading(false);
     }
@@ -481,14 +481,14 @@ export default function CheckoutPage() {
                   id="contact-info-heading"
                   className="text-lg font-medium text-gray-900"
                 >
-                  Contact information
+                  Informacje kontaktowe
                 </h2>
                 {user && (
                   <a
                     href="/profile"
                     className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
                   >
-                    Manage addresses
+                    Zarządzaj adresami
                   </a>
                 )}
               </div>
@@ -940,7 +940,7 @@ export default function CheckoutPage() {
                             </div>
                             <div className="ml-3">
                               <span className="text-sm font-medium text-gray-900">
-                                Enter new address
+                                Wprowadź nowy adres
                               </span>
                             </div>
                           </div>
