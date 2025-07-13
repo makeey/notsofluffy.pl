@@ -293,10 +293,22 @@ export interface CartItemResponse {
   updated_at: string;
 }
 
+export interface CartDiscount {
+  code_id: number;
+  code: string;
+  description: string;
+  discount_type: string;
+  discount_value: number;
+  discount_amount: number;
+}
+
 export interface CartResponse {
   items: CartItemResponse[];
   total_items: number;
+  subtotal: number;
+  discount_amount: number;
   total_price: number;
+  applied_discount?: CartDiscount;
 }
 
 export interface CartCountResponse {
@@ -405,6 +417,9 @@ export interface OrderResponse {
   subtotal: number;
   shipping_cost: number;
   tax_amount: number;
+  discount_code_id?: number;
+  discount_amount: number;
+  discount_description?: string;
   payment_method?: string;
   payment_status: string;
   notes?: string;
@@ -443,7 +458,7 @@ export interface UserProfileResponse {
   phone?: string;
   created_at: string;
   updated_at: string;
-  addresses: UserAddressResponse[];
+  addresses: UserAddressResponse[] | null;
 }
 
 export interface UserAddressRequest {
@@ -498,6 +513,71 @@ export interface SearchResponse {
 export interface SearchSuggestionsResponse {
   suggestions: string[];
   query: string;
+}
+
+// Discount interfaces
+export interface ApplyDiscountRequest {
+  code: string;
+}
+
+export interface ApplyDiscountResponse {
+  code: string;
+  description: string;
+  discount_type: string;
+  discount_value: number;
+  discount_amount: number;
+  original_total: number;
+  discounted_total: number;
+  message: string;
+}
+
+export interface DiscountCodeRequest {
+  code: string;
+  description: string;
+  discount_type: 'percentage' | 'fixed_amount';
+  discount_value: number;
+  min_order_amount: number;
+  usage_type: 'one_time' | 'once_per_user' | 'unlimited';
+  max_uses?: number;
+  active: boolean;
+  start_date: string; // Format: YYYY-MM-DDTHH:mm:ssZ
+  end_date?: string; // Format: YYYY-MM-DDTHH:mm:ssZ
+}
+
+export interface DiscountCodeResponse {
+  id: number;
+  code: string;
+  description: string;
+  discount_type: string;
+  discount_value: number;
+  min_order_amount: number;
+  usage_type: string;
+  max_uses?: number;
+  used_count: number;
+  active: boolean;
+  start_date: string;
+  end_date?: string;
+  created_by?: number;
+  created_at: string;
+  updated_at: string;
+  is_expired: boolean;
+  is_usage_exceeded: boolean;
+}
+
+export interface DiscountCodeListResponse {
+  discount_codes: DiscountCodeResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface DiscountCodeUsage {
+  id: number;
+  discount_code_id: number;
+  user_id?: number;
+  session_id: string;
+  order_id?: number;
+  created_at: string;
 }
 
 class ApiClient {
@@ -1164,6 +1244,35 @@ class ApiClient {
     return response.json();
   }
 
+  // Discount API methods
+  async applyDiscountToCart(request: ApplyDiscountRequest): Promise<ApplyDiscountResponse> {
+    const response = await fetch(`${this.baseUrl}/api/cart/discount/apply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies for session
+      body: JSON.stringify(request),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async removeDiscountFromCart(): Promise<{ message: string }> {
+    const response = await fetch(`${this.baseUrl}/api/cart/discount/remove`, {
+      method: 'DELETE',
+      credentials: 'include', // Include cookies for session
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
   // Order API methods
   async createOrder(order: OrderRequest): Promise<OrderResponse> {
     // Use authenticated request method that includes JWT tokens for logged-in users
@@ -1285,6 +1394,49 @@ class ApiClient {
     return this.request<{ message: string }>(`/api/user/addresses/${id}/default`, {
       method: 'PATCH',
     });
+  }
+
+  // Admin Discount Code Management
+  async listDiscountCodes(
+    page: number = 1, 
+    limit: number = 20, 
+    active?: boolean
+  ): Promise<DiscountCodeListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    if (active !== undefined) params.append('active', active.toString());
+    
+    return this.request<DiscountCodeListResponse>(`/api/admin/discount-codes?${params}`);
+  }
+
+  async createDiscountCode(discountData: DiscountCodeRequest): Promise<DiscountCodeResponse> {
+    return this.request<DiscountCodeResponse>('/api/admin/discount-codes', {
+      method: 'POST',
+      body: JSON.stringify(discountData),
+    });
+  }
+
+  async getDiscountCode(id: number): Promise<DiscountCodeResponse> {
+    return this.request<DiscountCodeResponse>(`/api/admin/discount-codes/${id}`);
+  }
+
+  async updateDiscountCode(id: number, discountData: DiscountCodeRequest): Promise<DiscountCodeResponse> {
+    return this.request<DiscountCodeResponse>(`/api/admin/discount-codes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(discountData),
+    });
+  }
+
+  async deleteDiscountCode(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/discount-codes/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getDiscountCodeUsage(id: number): Promise<DiscountCodeUsage[]> {
+    return this.request<DiscountCodeUsage[]>(`/api/admin/discount-codes/${id}/usage`);
   }
 }
 

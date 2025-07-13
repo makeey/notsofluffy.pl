@@ -80,10 +80,11 @@ export default function CheckoutPage() {
           if (profile.phone) setPhone(profile.phone);
           
           // Load addresses
-          setSavedAddresses(profile.addresses);
+          const addresses = profile.addresses || [];
+          setSavedAddresses(addresses);
           
           // Auto-select default address if available
-          const defaultAddress = profile.addresses.find(addr => addr.is_default);
+          const defaultAddress = addresses.find(addr => addr.is_default);
           if (defaultAddress) {
             setSelectedShippingAddressId(defaultAddress.id);
             populateAddressForm(defaultAddress, 'shipping');
@@ -382,8 +383,19 @@ export default function CheckoutPage() {
             <dl className="hidden space-y-6 border-t border-gray-200 pt-6 text-sm font-medium text-gray-900 lg:block">
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Subtotal</dt>
-                <dd>${cart.total_price.toFixed(2)}</dd>
+                <dd>${(cart.subtotal || 0).toFixed(2)}</dd>
               </div>
+
+              {cart.applied_discount && (
+                <div className="flex items-center justify-between text-green-600">
+                  <dt>
+                    Discount ({cart.applied_discount.code})
+                    {cart.applied_discount.discount_type === 'percentage' && 
+                      ` (${cart.applied_discount.discount_value}%)`}
+                  </dt>
+                  <dd>-${(cart.discount_amount || 0).toFixed(2)}</dd>
+                </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Shipping</dt>
@@ -426,8 +438,19 @@ export default function CheckoutPage() {
                 <dl className="mx-auto max-w-lg space-y-6">
                   <div className="flex items-center justify-between">
                     <dt className="text-gray-600">Subtotal</dt>
-                    <dd>${cart.total_price.toFixed(2)}</dd>
+                    <dd>${(cart.subtotal || 0).toFixed(2)}</dd>
                   </div>
+
+                  {cart.applied_discount && (
+                    <div className="flex items-center justify-between text-green-600">
+                      <dt>
+                        Discount ({cart.applied_discount.code})
+                        {cart.applied_discount.discount_type === 'percentage' && 
+                          ` (${cart.applied_discount.discount_value}%)`}
+                      </dt>
+                      <dd>-${(cart.discount_amount || 0).toFixed(2)}</dd>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between">
                     <dt className="text-gray-600">Shipping</dt>

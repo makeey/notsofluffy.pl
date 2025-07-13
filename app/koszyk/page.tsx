@@ -14,8 +14,10 @@ import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 
 export default function CartPage() {
-  const { cart, loading, error, updateCartItem, removeFromCart } = useCart();
+  const { cart, loading, error, updateCartItem, removeFromCart, applyDiscount, removeDiscount, discountLoading, discountError } = useCart();
   const [updatingItems, setUpdatingItems] = useState<Set<number>>(new Set());
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountSuccess, setDiscountSuccess] = useState<string | null>(null);
 
   const handleQuantityChange = async (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -23,8 +25,8 @@ export default function CartPage() {
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
       await updateCartItem(itemId, newQuantity);
-    } catch (error) {
-      console.error('Failed to update quantity:', error);
+    } catch (err) {
+      console.error('Failed to update quantity:', err);
     } finally {
       setUpdatingItems(prev => {
         const newSet = new Set(prev);
@@ -38,14 +40,37 @@ export default function CartPage() {
     setUpdatingItems(prev => new Set(prev).add(itemId));
     try {
       await removeFromCart(itemId);
-    } catch (error) {
-      console.error('Failed to remove item:', error);
+    } catch (err) {
+      console.error('Failed to remove item:', err);
     } finally {
       setUpdatingItems(prev => {
         const newSet = new Set(prev);
         newSet.delete(itemId);
         return newSet;
       });
+    }
+  };
+
+  const handleApplyDiscount = async () => {
+    setDiscountSuccess(null);
+    try {
+      const response = await applyDiscount(discountCode);
+      setDiscountSuccess(response.message);
+      setDiscountCode(""); // Clear input on success
+    } catch (err) {
+      // Error is handled by the context
+      console.error('Failed to apply/remove discount:', err);
+    }
+  };
+
+  const handleRemoveDiscount = async () => {
+    setDiscountSuccess(null);
+    try {
+      await removeDiscount();
+      setDiscountSuccess("Discount removed successfully");
+    } catch (err) {
+      // Error is handled by the context
+      console.error('Failed to apply/remove discount:', err);
     }
   };
 
@@ -261,7 +286,7 @@ export default function CartPage() {
                 <div className="flex items-center justify-between">
                   <dt className="text-sm text-gray-600">Subtotal</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    ${(cart.total_price || 0).toFixed(2)}
+                    ${(cart.subtotal || 0).toFixed(2)}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">
@@ -270,6 +295,74 @@ export default function CartPage() {
                     {cart.total_items || 0}
                   </dd>
                 </div>
+                
+                {/* Discount code section */}
+                <div className="border-t border-gray-200 pt-4">
+                  {!cart.applied_discount ? (
+                    <div className="space-y-2">
+                      <label htmlFor="discount-code" className="text-sm font-medium text-gray-700">
+                        Discount code
+                      </label>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          id="discount-code"
+                          value={discountCode}
+                          onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                          placeholder="Enter code"
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                          disabled={discountLoading}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyDiscount}
+                          disabled={!discountCode || discountLoading}
+                          className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {discountLoading ? "Applying..." : "Apply"}
+                        </button>
+                      </div>
+                      {discountError && (
+                        <p className="text-sm text-red-600">{discountError}</p>
+                      )}
+                      {discountSuccess && (
+                        <p className="text-sm text-green-600">{discountSuccess}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Discount applied</p>
+                          <p className="text-sm text-gray-500">
+                            {cart.applied_discount.code}: {cart.applied_discount.description}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveDiscount}
+                          disabled={discountLoading}
+                          className="text-sm text-red-600 hover:text-red-500 disabled:opacity-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {cart.applied_discount && (
+                  <div className="flex items-center justify-between text-green-600">
+                    <dt className="text-sm">
+                      Discount
+                      {cart.applied_discount.discount_type === 'percentage' && 
+                        ` (${cart.applied_discount.discount_value}%)`}
+                    </dt>
+                    <dd className="text-sm font-medium">
+                      -${(cart.discount_amount || 0).toFixed(2)}
+                    </dd>
+                  </div>
+                )}
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
                   <dt className="flex items-center text-sm text-gray-600">
                     <span>Shipping estimate</span>

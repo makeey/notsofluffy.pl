@@ -361,6 +361,15 @@ export default function OrderDetailsPage() {
                   <span>Subtotal</span>
                   <span>${order.subtotal.toFixed(2)}</span>
                 </div>
+                {order.discount_amount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>
+                      Discount
+                      {order.discount_description && ` (${order.discount_description})`}
+                    </span>
+                    <span>-${order.discount_amount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span>${order.shipping_cost.toFixed(2)}</span>

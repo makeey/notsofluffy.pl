@@ -376,6 +376,15 @@ export default function OrderPage() {
                   <dt className="text-gray-700">Wartość produktów</dt>
                   <dd className="text-gray-900 font-medium">{order.subtotal.toFixed(2)} zł</dd>
                 </div>
+                {order.discount_amount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <dt className="text-green-700">
+                      Rabat
+                      {order.discount_description && ` (${order.discount_description})`}
+                    </dt>
+                    <dd className="text-green-600 font-medium">-{order.discount_amount.toFixed(2)} zł</dd>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <dt className="text-gray-700">Dostawa</dt>
                   <dd className="text-gray-900 font-medium">{order.shipping_cost.toFixed(2)} zł</dd>

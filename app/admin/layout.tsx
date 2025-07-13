@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { Users, Images, Settings, LogOut, LayoutDashboard, Tag, Package, Palette, Plus, ShoppingBag, Ruler, Layers, ShoppingCart } from 'lucide-react';
+import { Users, Images, Settings, LogOut, LayoutDashboard, Tag, Package, Palette, Plus, ShoppingBag, Ruler, Layers, ShoppingCart, Percent } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -92,6 +92,11 @@ export default function AdminLayout({
       href: '/admin/orders',
       label: 'Orders',
       icon: ShoppingCart,
+    },
+    {
+      href: '/admin/discount-codes',
+      label: 'Discount Codes',
+      icon: Percent,
     },
     {
       href: '/admin/settings',

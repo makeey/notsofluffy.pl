@@ -2,18 +2,22 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { apiClient } from '@/lib/api';
-import type { CartResponse, CartItemRequest, CartItemUpdateRequest } from '@/lib/api';
+import type { CartResponse, CartItemRequest, CartItemUpdateRequest, ApplyDiscountRequest, ApplyDiscountResponse } from '@/lib/api';
 
 interface CartContextType {
   cart: CartResponse | null;
   cartCount: number;
   loading: boolean;
   error: string | null;
+  discountLoading: boolean;
+  discountError: string | null;
   addToCart: (item: CartItemRequest) => Promise<void>;
   updateCartItem: (id: number, quantity: number) => Promise<void>;
   removeFromCart: (id: number) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  applyDiscount: (code: string) => Promise<ApplyDiscountResponse>;
+  removeDiscount: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,6 +31,8 @@ export function CartProvider({ children }: CartProviderProps) {
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [discountLoading, setDiscountLoading] = useState(false);
+  const [discountError, setDiscountError] = useState<string | null>(null);
 
   // Fetch cart data
   const refreshCart = async () => {
@@ -42,7 +48,7 @@ export function CartProvider({ children }: CartProviderProps) {
       console.error('Error fetching cart:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch cart');
       // Set defaults for error state
-      setCart({ items: [], total_items: 0, total_price: 0 });
+      setCart({ items: [], total_items: 0, subtotal: 0, discount_amount: 0, total_price: 0 });
       setCartCount(0);
     } finally {
       setLoading(false);
@@ -102,6 +108,42 @@ export function CartProvider({ children }: CartProviderProps) {
     }
   };
 
+  // Apply discount code
+  const applyDiscount = async (code: string): Promise<ApplyDiscountResponse> => {
+    try {
+      setDiscountError(null);
+      setDiscountLoading(true);
+      const request: ApplyDiscountRequest = { code };
+      const response = await apiClient.applyDiscountToCart(request);
+      await refreshCart(); // Refresh cart to get updated totals
+      return response;
+    } catch (err) {
+      console.error('Error applying discount:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to apply discount';
+      setDiscountError(errorMessage);
+      throw err;
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
+  // Remove discount from cart
+  const removeDiscount = async () => {
+    try {
+      setDiscountError(null);
+      setDiscountLoading(true);
+      await apiClient.removeDiscountFromCart();
+      await refreshCart(); // Refresh cart to get updated totals
+    } catch (err) {
+      console.error('Error removing discount:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to remove discount';
+      setDiscountError(errorMessage);
+      throw err;
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
   // Load cart on mount
   useEffect(() => {
     refreshCart();
@@ -112,11 +154,15 @@ export function CartProvider({ children }: CartProviderProps) {
     cartCount,
     loading,
     error,
+    discountLoading,
+    discountError,
     addToCart,
     updateCartItem,
     removeFromCart,
     clearCart,
     refreshCart,
+    applyDiscount,
+    removeDiscount,
   };
 
   return (
