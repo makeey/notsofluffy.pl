@@ -55,7 +55,13 @@ export function MaintenanceCheck({ children }: MaintenanceCheckProps) {
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/register');
   const isComingSoonPage = pathname === '/coming-soon';
 
-  if (isAdmin && (isAdminRoute || isAuthRoute)) {
+  // Allow auth routes for everyone during maintenance (so non-admin users can login)
+  if (isAuthRoute) {
+    return <>{children}</>;
+  }
+
+  // Allow admin users to access admin routes during maintenance
+  if (isAdmin && isAdminRoute) {
     return <>{children}</>;
   }
 

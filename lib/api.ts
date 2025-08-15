@@ -1185,11 +1185,7 @@ class ApiClient {
 
   // Public API methods (no authentication required)
   async getPublicCategories(): Promise<CategoryListResponse> {
-    const response = await fetch(`${this.baseUrl}/api/categories`);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return response.json();
+    return this.request<CategoryListResponse>('/api/categories');
   }
 
   async getPublicProducts(params: {
@@ -1207,12 +1203,8 @@ class ApiClient {
       params.category.forEach(cat => searchParams.append('category', cat));
     }
     
-    const url = `${this.baseUrl}/api/products${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return response.json();
+    const endpoint = `/api/products${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    return this.request<ProductListResponse>(endpoint);
   }
 
   async getPublicProduct(id: number): Promise<{
@@ -1220,11 +1212,11 @@ class ApiClient {
     variants: ProductVariantResponse[];
     sizes: SizeResponse[];
   }> {
-    const response = await fetch(`${this.baseUrl}/api/products/${id}`);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return response.json();
+    return this.request<{
+      product: ProductResponse;
+      variants: ProductVariantResponse[];
+      sizes: SizeResponse[];
+    }>(`/api/products/${id}`);
   }
 
   // Search API methods
@@ -1245,12 +1237,8 @@ class ApiClient {
       params.category.forEach(cat => searchParams.append('category', cat));
     }
     
-    const url = `${this.baseUrl}/api/search${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return response.json();
+    const endpoint = `/api/search${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    return this.request<SearchResponse>(endpoint);
   }
 
   async getSearchSuggestions(query: string, limit: number = 5): Promise<SearchSuggestionsResponse> {
@@ -1258,12 +1246,8 @@ class ApiClient {
     searchParams.append('q', query);
     searchParams.append('limit', limit.toString());
     
-    const url = `${this.baseUrl}/api/search/suggestions?${searchParams.toString()}`;
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return response.json();
+    const endpoint = `/api/search/suggestions?${searchParams.toString()}`;
+    return this.request<SearchSuggestionsResponse>(endpoint);
   }
 
   // Cart API methods
