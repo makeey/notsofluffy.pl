@@ -594,6 +594,41 @@ export interface SiteSettingsResponse {
   settings: SiteSetting[];
 }
 
+// Client Review interfaces
+export interface ClientReviewRequest {
+  client_name: string;
+  instagram_handle?: string;
+  image_id: number;
+  display_order: number;
+  is_active: boolean;
+}
+
+export interface ClientReviewResponse {
+  id: number;
+  client_name: string;
+  instagram_handle?: string;
+  image_id: number;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  image?: ImageResponse;
+}
+
+export interface ClientReviewListResponse {
+  client_reviews: ClientReviewResponse[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ReorderClientReviewsRequest {
+  review_orders: {
+    id: number;
+    display_order: number;
+  }[];
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -1527,6 +1562,52 @@ class ApiClient {
       method: 'PUT',
       body: JSON.stringify({ value }),
     });
+  }
+
+  // Client Reviews Management
+  async getClientReviews(page: number = 1, limit: number = 20, activeOnly: boolean = false): Promise<ClientReviewListResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...(activeOnly && { active_only: 'true' }),
+    });
+    return this.request<ClientReviewListResponse>(`/api/admin/client-reviews?${params}`);
+  }
+
+  async getClientReview(id: number): Promise<ClientReviewResponse> {
+    return this.request<ClientReviewResponse>(`/api/admin/client-reviews/${id}`);
+  }
+
+  async createClientReview(reviewData: ClientReviewRequest): Promise<ClientReviewResponse> {
+    return this.request<ClientReviewResponse>('/api/admin/client-reviews', {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
+    });
+  }
+
+  async updateClientReview(id: number, reviewData: ClientReviewRequest): Promise<ClientReviewResponse> {
+    return this.request<ClientReviewResponse>(`/api/admin/client-reviews/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(reviewData),
+    });
+  }
+
+  async deleteClientReview(id: number): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/admin/client-reviews/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async reorderClientReviews(orders: ReorderClientReviewsRequest): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/api/admin/client-reviews/reorder', {
+      method: 'POST',
+      body: JSON.stringify(orders),
+    });
+  }
+
+  // Public method to get active client reviews
+  async getActiveClientReviews(): Promise<{ client_reviews: ClientReviewResponse[] }> {
+    return this.request<{ client_reviews: ClientReviewResponse[] }>('/api/client-reviews');
   }
 }
 

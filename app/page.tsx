@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { CategoryShowcase } from "@/components/CategoryShowcase";
+import { ClientReviewsGallery } from "@/components/ClientReviewsGallery";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
@@ -51,6 +52,9 @@ export default function Home() {
           </div>
         </section>
       </main>
+
+      {/* Client Reviews Gallery */}
+      <ClientReviewsGallery />
 
       {/* Footer */}
       <Footer />
