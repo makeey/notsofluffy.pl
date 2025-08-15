@@ -55,9 +55,19 @@ export default function DiscountCodesAdminPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.listDiscountCodes(page, limit, search);
-      setDiscountCodes(response.discount_codes || []);
-      setTotal(response.total || 0);
+      const response = await apiClient.listDiscountCodes(page, limit);
+      let codes = response.discount_codes || [];
+      
+      // Apply local search filter
+      if (search) {
+        codes = codes.filter(code => 
+          code.code.toLowerCase().includes(search.toLowerCase()) ||
+          (code.description && code.description.toLowerCase().includes(search.toLowerCase()))
+        );
+      }
+      
+      setDiscountCodes(codes);
+      setTotal(codes.length);
     } catch (err) {
       console.error('Failed to fetch discount codes:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch discount codes');

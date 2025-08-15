@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Trash2, Edit, Plus, GripVertical, Upload } from 'lucide-react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableItem } from '@/components/admin/SortableItem';
 
@@ -248,15 +248,15 @@ export default function ClientReviewsPage() {
     }
   };
 
-  const handleDragEnd = async (event: { active: { id: number }; over: { id: number } | null }) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
       return;
     }
 
-    const oldIndex = reviews.findIndex((review) => review.id === active.id);
-    const newIndex = reviews.findIndex((review) => review.id === over.id);
+    const oldIndex = reviews.findIndex((review) => review.id === Number(active.id));
+    const newIndex = reviews.findIndex((review) => review.id === Number(over.id));
     
     if (oldIndex === -1 || newIndex === -1) {
       return;

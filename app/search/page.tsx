@@ -1,18 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { SearchInput } from '@/components/SearchInput';
-import { apiClient, ProductResponse, Category, SearchResponse } from '@/lib/api';
+import { apiClient, Category, SearchResponse } from '@/lib/api';
 import {
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
-  XMarkIcon,
-  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
 const SORT_OPTIONS = [
@@ -36,7 +34,7 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [, setMobileFiltersOpen] = useState(false);
   
   // Load categories on mount
   useEffect(() => {
@@ -85,7 +83,7 @@ export default function SearchPage() {
       const response = await apiClient.searchProducts({
         q: query,
         category: categories,
-        sort: sort as any,
+        sort: sort as 'relevance' | 'price_asc' | 'price_desc' | 'newest' | 'name',
         page,
         limit: 12,
       });

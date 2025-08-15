@@ -7,6 +7,10 @@ interface SortableItemProps {
   children: React.ReactNode;
 }
 
+interface DragHandleProps {
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
+}
+
 export function SortableItem({ id, children }: SortableItemProps) {
   const {
     attributes,
@@ -29,7 +33,7 @@ export function SortableItem({ id, children }: SortableItemProps) {
       style={style}
       className={isDragging ? 'z-50' : ''}
     >
-      {React.cloneElement(children as React.ReactElement, {
+      {React.cloneElement(children as React.ReactElement<DragHandleProps>, {
         dragHandleProps: { ...attributes, ...listeners }
       })}
     </div>
