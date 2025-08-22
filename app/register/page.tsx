@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -24,6 +25,11 @@ export default function RegisterPage() {
     
     if (password.length < 6) {
       setError('Hasło musi mieć co najmniej 6 znaków');
+      return;
+    }
+    
+    if (!acceptTerms) {
+      setError('Musisz zaakceptować regulamin i politykę prywatności');
       return;
     }
     
@@ -109,6 +115,32 @@ export default function RegisterPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <div className="flex h-5 items-center">
+              <input
+                id="accept-terms"
+                name="accept-terms"
+                type="checkbox"
+                required
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="accept-terms" className="text-gray-600">
+                Akceptuję{' '}
+                <Link href="/regulamin" className="text-indigo-600 hover:text-indigo-500">
+                  regulamin
+                </Link>{' '}
+                oraz{' '}
+                <Link href="/polityka-prywatnosci" className="text-indigo-600 hover:text-indigo-500">
+                  politykę prywatności
+                </Link>
+              </label>
             </div>
           </div>
 
