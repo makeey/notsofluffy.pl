@@ -71,7 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // that returns just the necessary data (id, updated_at) for better performance
     const products = await apiClient.getPublicProducts({ page: 1, limit: 1000 })
     
-    productPages = products.data.map((product) => ({
+    productPages = products.products.map((product) => ({
       url: `${baseUrl}/products/${product.id}`,
       lastModified: new Date(product.updated_at),
       changeFrequency: 'weekly' as const,
@@ -86,9 +86,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let categoryPages: MetadataRoute.Sitemap = []
   
   try {
-    const categories = await apiClient.getCategories()
+    const categoriesResponse = await apiClient.getPublicCategories()
     
-    categoryPages = categories.map((category) => ({
+    categoryPages = categoriesResponse.categories.map((category) => ({
       url: `${baseUrl}/products?category=${encodeURIComponent(category.name.toLowerCase())}`,
       lastModified: new Date(category.updated_at),
       changeFrequency: 'weekly' as const,

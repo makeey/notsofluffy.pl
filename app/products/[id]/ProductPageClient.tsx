@@ -22,10 +22,9 @@ interface ProductDetailData {
 
 interface ProductPageClientProps {
   initialData: ProductDetailData;
-  productId: number;
 }
 
-export function ProductPageClient({ initialData, productId }: ProductPageClientProps) {
+export function ProductPageClient({ initialData }: ProductPageClientProps) {
   const data = initialData;
   const [selectedVariant, setSelectedVariant] = useState<ProductVariantResponse | null>(
     () => data.variants.find((v) => v.is_default) || data.variants[0] || null

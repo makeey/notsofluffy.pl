@@ -29,7 +29,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     // Get price range from sizes
     const prices = data.sizes.map(size => size.base_price);
     const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
 
     return {
       title: `${product.name} | NotSoFluffy`,
@@ -90,7 +89,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         'product:brand': 'NotSoFluffy',
       },
     };
-  } catch (error) {
+  } catch {
     // Fallback metadata if product not found
     return {
       title: 'Produkt nie znaleziony | NotSoFluffy',
@@ -200,7 +199,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         />
         
         {/* Client Component for Interactive Features */}
-        <ProductPageClient initialData={data} productId={productId} />
+        <ProductPageClient initialData={data} />
       </>
     );
   } catch (error) {
@@ -215,7 +214,7 @@ export async function generateStaticParams() {
     // You can implement this to pre-generate popular products
     // For now, we'll let Next.js generate them on-demand
     return [];
-  } catch (error) {
+  } catch {
     return [];
   }
 }
