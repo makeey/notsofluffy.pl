@@ -59,6 +59,7 @@ export default function CheckoutPage() {
 
   const [paymentMethod] = useState("");
   const [notes, setNotes] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   
   // Invoice fields
   const [requiresInvoice, setRequiresInvoice] = useState(false);
@@ -153,6 +154,11 @@ export default function CheckoutPage() {
           newErrors.nip = "NIP musi mieć 10 cyfr";
         }
       }
+    }
+
+    // Terms acceptance validation
+    if (!acceptTerms) {
+      newErrors.acceptTerms = "Musisz zaakceptować regulamin przed złożeniem zamówienia";
     }
 
     setErrors(newErrors);
@@ -1248,6 +1254,37 @@ export default function CheckoutPage() {
                     className="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
                     placeholder="Jakiekolwiek specjalne instrukcje do zamówienia..."
                   />
+                </div>
+              </div>
+            </section>
+
+            {/* Terms Acceptance */}
+            <section aria-labelledby="terms-heading" className="mt-10">
+              <div className="flex items-start space-x-3">
+                <div className="flex h-5 items-center">
+                  <input
+                    id="accept-terms"
+                    name="accept-terms"
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  />
+                </div>
+                <div className="text-sm">
+                  <label htmlFor="accept-terms" className="text-gray-700">
+                    Akceptuję{' '}
+                    <a href="/regulamin" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500">
+                      regulamin sklepu
+                    </a>{' '}
+                    oraz{' '}
+                    <a href="/polityka-prywatnosci" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500">
+                      politykę prywatności
+                    </a>
+                  </label>
+                  {errors.acceptTerms && (
+                    <p className="mt-1 text-sm text-red-600">{errors.acceptTerms}</p>
+                  )}
                 </div>
               </div>
             </section>

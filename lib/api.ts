@@ -1,5 +1,27 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
+// Safe storage helper for SSR compatibility
+function getStorageItem(key: string): string | null {
+  if (typeof window === 'undefined') {
+    return null; // Server-side rendering
+  }
+  return localStorage.getItem(key);
+}
+
+function setStorageItem(key: string, value: string): void {
+  if (typeof window === 'undefined') {
+    return; // Server-side rendering
+  }
+  localStorage.setItem(key, value);
+}
+
+function removeStorageItem(key: string): void {
+  if (typeof window === 'undefined') {
+    return; // Server-side rendering
+  }
+  localStorage.removeItem(key);
+}
+
 export interface User {
   id: number;
   email: string;
@@ -640,7 +662,7 @@ class ApiClient {
   private initializeCleanup() {
     // Clean up any invalid tokens on initialization
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
+      const token = getStorageItem('access_token');
       if (token && !this.isValidTokenFormat(token)) {
         console.warn('Invalid token detected on initialization, clearing tokens');
         this.clearTokens();
@@ -654,7 +676,7 @@ class ApiClient {
     retryOnAuth: boolean = true
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    const token = localStorage.getItem('access_token');
+    const token = getStorageItem('access_token');
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -698,7 +720,7 @@ class ApiClient {
 
   private async tryRefreshToken(): Promise<boolean> {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      const refreshToken = getStorageItem('refresh_token');
       if (!refreshToken) {
         return false;
       }
@@ -713,8 +735,8 @@ class ApiClient {
       const response = await this.refreshToken(refreshToken);
       
       // Update stored tokens
-      localStorage.setItem('access_token', response.access_token);
-      localStorage.setItem('refresh_token', response.refresh_token);
+      setStorageItem('access_token', response.access_token);
+      setStorageItem('refresh_token', response.refresh_token);
       
       return true;
     } catch (error) {
@@ -744,8 +766,8 @@ class ApiClient {
   }
 
   private clearTokens() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    removeStorageItem('access_token');
+    removeStorageItem('refresh_token');
   }
 
   private handleAuthFailure() {
@@ -825,7 +847,7 @@ class ApiClient {
     const formData = new FormData();
     formData.append('image', file);
 
-    const token = localStorage.getItem('access_token');
+    const token = getStorageItem('access_token');
     const headers: Record<string, string> = {};
     if (token) {
       headers.Authorization = `Bearer ${token}`;
@@ -1364,8 +1386,8 @@ class ApiClient {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(localStorage.getItem('access_token') ? {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        ...(getStorageItem('access_token') ? {
+          'Authorization': `Bearer ${getStorageItem('access_token')}`
         } : {}),
       },
       credentials: 'include', // Include cookies for session
@@ -1381,8 +1403,8 @@ class ApiClient {
   async getOrder(id: number): Promise<OrderResponse> {
     const response = await fetch(`${this.baseUrl}/api/orders/${id}`, {
       headers: {
-        ...(localStorage.getItem('access_token') ? {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        ...(getStorageItem('access_token') ? {
+          'Authorization': `Bearer ${getStorageItem('access_token')}`
         } : {}),
       },
       credentials: 'include', // Include cookies for session
@@ -1529,8 +1551,8 @@ class ApiClient {
 
   // Public method to check if user has valid tokens
   public hasValidTokens(): boolean {
-    const accessToken = localStorage.getItem('access_token');
-    const refreshToken = localStorage.getItem('refresh_token');
+    const accessToken = getStorageItem('access_token');
+    const refreshToken = getStorageItem('refresh_token');
     
     return !!(accessToken && this.isValidTokenFormat(accessToken) && 
               refreshToken && this.isValidTokenFormat(refreshToken));

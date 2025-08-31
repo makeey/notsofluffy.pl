@@ -61,16 +61,6 @@ export function Footer() {
                 <h3 className="text-sm font-medium text-white">Firma</h3>
                 <ul role="list" className="mt-6 space-y-6">
                   <li className="text-sm">
-                    <Link href="/o-nas" className="text-gray-300 hover:text-white">
-                      O nas
-                    </Link>
-                  </li>
-                  <li className="text-sm">
-                    <Link href="/kontakt" className="text-gray-300 hover:text-white">
-                      Kontakt
-                    </Link>
-                  </li>
-                  <li className="text-sm">
                     <Link href="/regulamin" className="text-gray-300 hover:text-white">
                       Regulamin
                     </Link>
@@ -88,22 +78,17 @@ export function Footer() {
                 <h3 className="text-sm font-medium text-white">Kontakt</h3>
                 <ul role="list" className="mt-6 space-y-6">
                   <li className="text-sm">
-                    <Link href="/kontakt" className="text-gray-300 hover:text-white">
-                      Skontaktuj się z nami
-                    </Link>
-                  </li>
-                  <li className="text-sm">
-                    <a href="https://facebook.com" className="text-gray-300 hover:text-white">
+                    <a href="https://www.facebook.com/profile.php?id=100089252553530" className="text-gray-300 hover:text-white">
                       Facebook
                     </a>
                   </li>
                   <li className="text-sm">
-                    <a href="https://instagram.com" className="text-gray-300 hover:text-white">
+                    <a href="https://www.instagram.com/notsofluffy_pl/" className="text-gray-300 hover:text-white">
                       Instagram
                     </a>
                   </li>
                   <li className="text-sm">
-                    <a href="mailto:kontakt@notsofluffy.pl" className="text-gray-300 hover:text-white">
+                    <a href="mailto:notsofluffy.pl@gmail.com" className="text-gray-300 hover:text-white">
                       E-mail
                     </a>
                   </li>
