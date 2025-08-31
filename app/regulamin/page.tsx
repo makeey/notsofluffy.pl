@@ -39,10 +39,10 @@ export default function TermsOfServicePage() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">§1. Postanowienia Ogólne</h2>
             <p className="text-gray-700 mb-4">
-              1. Niniejszy Regulamin określa zasady korzystania ze sklepu internetowego NotSoFluffy.pl, zwanego dalej "Sklepem".
+              1. Niniejszy Regulamin określa zasady korzystania ze sklepu internetowego NotSoFluffy.pl, zwanego dalej &quot;Sklepem&quot;.
             </p>
             <p className="text-gray-700 mb-4">
-              2. Właścicielem Sklepu jest Twój Startup z siedzibą w Polsce, zwany dalej "Sprzedawcą".
+              2. Właścicielem Sklepu jest Twój Startup z siedzibą w Polsce, zwany dalej &quot;Sprzedawcą&quot;.
             </p>
             <p className="text-gray-700 mb-4">
               3. Korzystanie ze Sklepu oznacza akceptację niniejszego Regulaminu.

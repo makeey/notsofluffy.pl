@@ -30,7 +30,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     const prices = data.sizes.map(size => size.base_price);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
-    const priceText = minPrice === maxPrice ? `$${minPrice}` : `$${minPrice} - $${maxPrice}`;
 
     return {
       title: `${product.name} | NotSoFluffy`,

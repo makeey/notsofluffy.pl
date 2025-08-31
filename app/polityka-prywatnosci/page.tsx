@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Informacje Ogólne</h2>
             <p className="text-gray-700 mb-4">
-              Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników serwisu NotSoFluffy.pl (dalej: "Serwis"), prowadzonego przez Twój Startup (dalej: "Administrator").
+              Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników serwisu NotSoFluffy.pl (dalej: &quot;Serwis&quot;), prowadzonego przez Twój Startup (dalej: &quot;Administrator&quot;).
             </p>
             <p className="text-gray-700 mb-4">
               Administrator przykłada szczególną wagę do poszanowania prywatności użytkowników Serwisu.
@@ -122,7 +122,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc list-inside text-gray-700 mb-4 ml-4">
               <li>Dostępu do swoich danych osobowych</li>
               <li>Sprostowania nieprawidłowych danych</li>
-              <li>Usunięcia danych ("prawo do bycia zapomnianym")</li>
+              <li>Usunięcia danych (&quot;prawo do bycia zapomnianym&quot;)</li>
               <li>Ograniczenia przetwarzania danych</li>
               <li>Przenoszenia danych</li>
               <li>Sprzeciwu wobec przetwarzania</li>
