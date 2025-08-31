@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import {
   apiClient,
   ProductResponse,
@@ -72,6 +73,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
     formState: { errors },
     setValue,
     reset,
+    watch,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -246,11 +248,10 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="description">Full Description *</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
+            <RichTextEditor
+              content={watch("description") || ""}
+              onChange={(content) => setValue("description", content)}
               placeholder="Detailed product description"
-              rows={5}
             />
             {errors.description && (
               <p className="text-red-600 text-sm">

@@ -1,538 +1,222 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { Metadata } from 'next';
 import { apiClient } from "@/lib/api";
-import type {
-  ProductResponse,
-  ProductVariantResponse,
-  SizeResponse,
-} from "@/lib/api";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { useCart } from "@/contexts/CartContext";
-import Link from "next/link";
-import { ChevronLeftIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { ProductPageClient } from './ProductPageClient';
+import { notFound } from 'next/navigation';
 
-interface ProductDetailData {
-  product: ProductResponse;
-  variants: ProductVariantResponse[];
-  sizes: SizeResponse[];
+interface ProductPageProps {
+  params: Promise<{
+    id: string;
+  }>;
 }
 
-export default function ProductDetailPage() {
-  const params = useParams();
-  const productId = parseInt(params.id as string);
+// Generate metadata for SEO
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  try {
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
+    const data = await apiClient.getPublicProduct(productId);
+    const product = data.product;
 
-  const [data, setData] = useState<ProductDetailData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedVariant, setSelectedVariant] =
-    useState<ProductVariantResponse | null>(null);
-  const [selectedSize, setSelectedSize] = useState<SizeResponse | null>(null);
-  const [selectedServices, setSelectedServices] = useState<number[]>([]);
-  const [currentImages, setCurrentImages] = useState<string[]>([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [quantity, setQuantity] = useState(1);
-  const [addingToCart, setAddingToCart] = useState(false);
-  
-  const { addToCart } = useCart();
+    // Get main image URL
+    const mainImageUrl = product.main_image 
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${product.main_image.path}`
+      : '/images/default-product.jpg';
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const response = await apiClient.getPublicProduct(productId);
-        setData(response);
+    // Generate description from short_description and description
+    const description = product.short_description || product.description || 
+      `${product.name} - wysokiej jakości produkt dostępny w NotSoFluffy.pl. Zamów online z szybką dostawą.`;
 
-        // Set default variant (first one or the default one)
-        if (response.variants.length > 0) {
-          const defaultVariant =
-            response.variants.find((v) => v.is_default) || response.variants[0];
-          setSelectedVariant(defaultVariant);
-        }
+    // Get price range from sizes
+    const prices = data.sizes.map(size => size.base_price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const priceText = minPrice === maxPrice ? `$${minPrice}` : `$${minPrice} - $${maxPrice}`;
 
-        // Set initial images (main image + product images)
-        const initialImages = [
-          `${process.env.NEXT_PUBLIC_API_URL}/${response.product.main_image.path}`,
-          ...response.product.images.map(
-            (img) => `${process.env.NEXT_PUBLIC_API_URL}/${img.path}`,
-          ),
-        ];
-        setCurrentImages(initialImages);
+    return {
+      title: `${product.name} | NotSoFluffy`,
+      description: description.substring(0, 160), // SEO-friendly length
+      keywords: [
+        product.name,
+        product.category?.name || '',
+        product.material?.name || '',
+        'sklep online',
+        'NotSoFluffy',
+        ...product.name.split(' ')
+      ].filter(Boolean),
+      
+      // Open Graph
+      openGraph: {
+        title: `${product.name} | NotSoFluffy`,
+        description,
+        type: 'website',
+        locale: 'pl_PL',
+        url: `https://notsofluffy.pl/products/${productId}`,
+        siteName: 'NotSoFluffy',
+        images: [
+          {
+            url: mainImageUrl,
+            width: 800,
+            height: 800,
+            alt: product.name,
+          },
+          // Add additional product images
+          ...product.images.slice(0, 3).map(img => ({
+            url: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${img.path}`,
+            width: 800,
+            height: 800,
+            alt: `${product.name} - dodatkowe zdjęcie`,
+          }))
+        ],
+      },
+      
+      // Twitter Card
+      twitter: {
+        card: 'summary_large_image',
+        title: `${product.name} | NotSoFluffy`,
+        description: description.substring(0, 200),
+        images: [mainImageUrl],
+      },
+      
+      // Additional meta tags
+      alternates: {
+        canonical: `https://notsofluffy.pl/products/${productId}`,
+      },
+      
+      // Product-specific meta
+      other: {
+        'product:price:amount': minPrice.toString(),
+        'product:price:currency': 'USD',
+        'product:availability': data.sizes.some(size => !size.use_stock || size.available_stock > 0) ? 'in stock' : 'out of stock',
+        'product:category': product.category?.name || '',
+        'product:brand': 'NotSoFluffy',
+      },
+    };
+  } catch (error) {
+    // Fallback metadata if product not found
+    return {
+      title: 'Produkt nie znaleziony | NotSoFluffy',
+      description: 'Szukany produkt nie został znaleziony w naszym sklepie.',
+    };
+  }
+}
 
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        setError("Failed to load product");
-      } finally {
-        setLoading(false);
-      }
+export default async function ProductPage({ params }: ProductPageProps) {
+  try {
+    const resolvedParams = await params;
+    const productId = parseInt(resolvedParams.id);
+    
+    // Fetch product data on the server
+    const data = await apiClient.getPublicProduct(productId);
+    
+    // Generate JSON-LD structured data
+    const product = data.product;
+    const prices = data.sizes.map(size => size.base_price);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    
+    const mainImageUrl = product.main_image 
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${product.main_image.path}`
+      : '/images/default-product.jpg';
+
+    // Check availability
+    const inStock = data.sizes.some(size => !size.use_stock || size.available_stock > 0);
+
+    const structuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: product.name,
+      description: product.description || product.short_description,
+      image: [
+        mainImageUrl,
+        ...product.images.map(img => 
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${img.path}`
+        )
+      ],
+      brand: {
+        '@type': 'Brand',
+        name: 'NotSoFluffy'
+      },
+      manufacturer: {
+        '@type': 'Organization',
+        name: 'NotSoFluffy'
+      },
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'USD',
+        lowPrice: minPrice,
+        highPrice: maxPrice,
+        availability: inStock 
+          ? 'https://schema.org/InStock' 
+          : 'https://schema.org/OutOfStock',
+        seller: {
+          '@type': 'Organization',
+          name: 'NotSoFluffy',
+          url: 'https://notsofluffy.pl'
+        },
+        url: `https://notsofluffy.pl/products/${productId}`
+      },
+      category: product.category?.name,
+      material: product.material?.name,
+      productID: product.id.toString(),
+      sku: `NSF-${product.id}`,
+      gtin: `NotSoFluffy-${product.id}`,
     };
 
-    fetchProduct();
-  }, [productId]);
+    // Add breadcrumb structured data
+    const breadcrumbStructuredData = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Główna',
+          item: 'https://notsofluffy.pl'
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Produkty',
+          item: 'https://notsofluffy.pl/products'
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: product.name,
+          item: `https://notsofluffy.pl/products/${productId}`
+        }
+      ]
+    };
 
-  // Update images when variant changes
-  useEffect(() => {
-    if (selectedVariant && data) {
-      const variantImages =
-        selectedVariant.images.length > 0
-          ? selectedVariant.images.map(
-              (img) => `${process.env.NEXT_PUBLIC_API_URL}/${img.path}`,
-            )
-          : [
-              `${process.env.NEXT_PUBLIC_API_URL}/${data.product.main_image.path}`,
-              ...data.product.images.map(
-                (img) => `${process.env.NEXT_PUBLIC_API_URL}/${img.path}`,
-              ),
-            ];
-      setCurrentImages(variantImages);
-      setCurrentImageIndex(0);
-    }
-  }, [selectedVariant, data]);
-
-  const calculatePrice = (): number => {
-    if (!selectedSize || !selectedVariant) return 0;
-
-    let price = selectedSize.base_price;
-
-    // Apply 10% markup for custom colors
-    if (selectedVariant.color.custom) {
-      price *= 1.1;
-    }
-
-    // Add additional services
-    if (data && data.product.additional_services && selectedServices.length > 0) {
-      const servicesPrice = selectedServices.reduce((total, serviceId) => {
-        const service = data.product.additional_services.find(
-          (s) => s.id === serviceId,
-        );
-        return total + (service?.price || 0);
-      }, 0);
-      price += servicesPrice;
-    }
-
-    return Math.round(price * 100) / 100; // Round to 2 decimal places
-  };
-
-  const handleQuantityChange = (newQuantity: number) => {
-    const maxQuantity = getMaxQuantity();
-    if (newQuantity >= 1 && newQuantity <= Math.min(99, maxQuantity)) {
-      setQuantity(newQuantity);
-    }
-  };
-
-  const getMaxQuantity = (): number => {
-    if (!selectedSize) return 99;
-    if (!selectedSize.use_stock) return 99;
-    return Math.max(0, selectedSize.available_stock);
-  };
-
-  const isStockAvailable = (size: SizeResponse): boolean => {
-    if (!size.use_stock) return true;
-    return size.available_stock > 0;
-  };
-
-  const getStockDisplayText = (size: SizeResponse): string => {
-    if (!size.use_stock) return "";
-    if (size.available_stock <= 0) return "Brak w magazynie";
-    if (size.available_stock <= 5) return `Mała ilość (${size.available_stock})`;
-    return `W magazynie (${size.available_stock})`;
-  };
-
-  const getStockDisplayColor = (size: SizeResponse): string => {
-    if (!size.use_stock) return "";
-    if (size.available_stock <= 0) return "text-red-600";
-    if (size.available_stock <= 5) return "text-orange-600";
-    return "text-green-600";
-  };
-
-  const incrementQuantity = () => {
-    handleQuantityChange(quantity + 1);
-  };
-
-  const decrementQuantity = () => {
-    handleQuantityChange(quantity - 1);
-  };
-
-  const handleAddToCart = async () => {
-    if (!selectedVariant || !selectedSize || !data) {
-      return;
-    }
-
-    setAddingToCart(true);
-    try {
-      await addToCart({
-        product_id: data.product.id,
-        variant_id: selectedVariant.id,
-        size_id: selectedSize.id,
-        quantity: quantity,
-        additional_service_ids: selectedServices,
-      });
-      
-      // Show success message (you could use a toast here)
-      alert('Produkt dodano do koszyka!');
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-      alert('Nie udało się dodać produktu do koszyka. Spróbuj ponownie.');
-    } finally {
-      setAddingToCart(false);
-    }
-  };
-
-  const isAddToCartEnabled = selectedVariant && selectedSize && !addingToCart && isStockAvailable(selectedSize);
-
-  if (loading) {
     return (
-      <div className="bg-white">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-gray-200 aspect-square rounded-lg"></div>
-              <div className="space-y-6">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-20 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Footer />
-      </div>
+      <>
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
+        />
+        
+        {/* Client Component for Interactive Features */}
+        <ProductPageClient initialData={data} productId={productId} />
+      </>
     );
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    notFound();
   }
+}
 
-  if (error || !data) {
-    return (
-      <div className="bg-white">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Błąd</h1>
-            <p className="text-gray-600">{error || "Produkt nie znaleziony"}</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
+// Generate static params for better performance (optional)
+export async function generateStaticParams() {
+  try {
+    // You can implement this to pre-generate popular products
+    // For now, we'll let Next.js generate them on-demand
+    return [];
+  } catch (error) {
+    return [];
   }
-
-  return (
-    <div className="bg-white">
-      <Header />
-      <div className="container mx-auto px-4 py-8">
-        {/* Breadcrumb Navigation */}
-        <nav className="flex items-center mb-8" aria-label="Breadcrumb">
-          <Link 
-            href="/" 
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            Główna
-          </Link>
-          <span className="mx-2 text-gray-400">/</span>
-          <Link 
-            href="/products" 
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            Produkty
-          </Link>
-          <span className="mx-2 text-gray-400">/</span>
-          <span className="text-gray-900 font-medium">{data.product.name}</span>
-        </nav>
-
-        {/* Back Button */}
-        <Link 
-          href="/products" 
-          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-        >
-          <ChevronLeftIcon className="h-5 w-5 mr-1" />
-          Powrót do produktów
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left side - Image Gallery */}
-          <div className="space-y-4">
-            {/* Main Image */}
-            <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
-              <img
-                src={currentImages[currentImageIndex]}
-                alt={data.product.name}
-                className="w-full h-full object-cover object-center"
-              />
-            </div>
-
-            {/* Thumbnail Images */}
-            {currentImages.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto">
-                {currentImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 ${
-                      index === currentImageIndex
-                        ? "border-indigo-500"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <img
-                      src={image}
-                      alt={`${data.product.name} view ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Right side - Product Info */}
-          <div className="space-y-6">
-            {/* Product Title and Description */}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {data.product.name}
-              </h1>
-              <p className="mt-2 text-lg text-gray-600">
-                {data.product.short_description}
-              </p>
-              {data.product.description && (
-                <p className="mt-4 text-gray-700">{data.product.description}</p>
-              )}
-            </div>
-
-            {/* Variants Selection */}
-            {data.variants.length > 0 && (
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Kolor
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {data.variants.map((variant) => (
-                    <button
-                      key={variant.id}
-                      onClick={() => setSelectedVariant(variant)}
-                      className={`p-3 rounded-lg border-2 transition-colors ${
-                        selectedVariant?.id === variant.id
-                          ? "border-indigo-500 bg-indigo-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-3">
-                        {variant.color.image && (
-                          <img
-                            src={`${process.env.NEXT_PUBLIC_API_URL}/${variant.color.image.path}`}
-                            alt={variant.color.name}
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                        )}
-                        <div className="text-left">
-                          <p className="font-medium text-gray-900">
-                            {variant.name}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {variant.color.name}
-                            {variant.color.custom && " (Custom +10%)"}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Size Selection */}
-            {data.sizes.length > 0 && (
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Rozmiar</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {data.sizes.map((size) => {
-                    const isAvailable = isStockAvailable(size);
-                    const stockText = getStockDisplayText(size);
-                    const stockColor = getStockDisplayColor(size);
-                    
-                    return (
-                      <button
-                        key={size.id}
-                        onClick={() => isAvailable && setSelectedSize(size)}
-                        disabled={!isAvailable}
-                        className={`p-3 rounded-lg border-2 transition-colors text-left ${
-                          !isAvailable
-                            ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                            : selectedSize?.id === size.id
-                            ? "border-indigo-500 bg-indigo-50"
-                            : "border-gray-200 hover:border-gray-300"
-                        }`}
-                      >
-                        <div>
-                          <p className={`font-medium ${
-                            !isAvailable ? "text-gray-400" : "text-gray-900"
-                          }`}>
-                            {size.name}
-                          </p>
-                          <div className="text-sm text-gray-500 space-y-1">
-                            <p>A: {size.a}, B: {size.b}, C: {size.c}</p>
-                            <p>D: {size.d}, E: {size.e}, F: {size.f}</p>
-                          </div>
-                          <div className="flex items-center justify-between mt-1">
-                            <p className={`text-sm font-medium ${
-                              !isAvailable ? "text-gray-400" : "text-gray-900"
-                            }`}>
-                              ${size.base_price}
-                            </p>
-                            {stockText && (
-                              <p className={`text-xs font-medium ${stockColor}`}>
-                                {stockText}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Additional Services */}
-            {data.product.additional_services && data.product.additional_services.length > 0 && (
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Dodatkowe usługi
-                </h3>
-                <div className="space-y-2">
-                  {data.product.additional_services.map((service) => (
-                    <label
-                      key={service.id}
-                      className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedServices.includes(service.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedServices([
-                              ...selectedServices,
-                              service.id,
-                            ]);
-                          } else {
-                            setSelectedServices(
-                              selectedServices.filter(
-                                (id) => id !== service.id,
-                              ),
-                            );
-                          }
-                        }}
-                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          {service.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {service.description}
-                        </p>
-                      </div>
-                      <p className="font-medium text-gray-900">
-                        +${service.price}
-                      </p>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Quantity Selector */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Ilość</h3>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={decrementQuantity}
-                  disabled={quantity <= 1}
-                  className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <MinusIcon className="h-4 w-4" />
-                </button>
-                <input
-                  type="number"
-                  min="1"
-                  max={getMaxQuantity()}
-                  value={quantity}
-                  onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-                  className="w-20 text-center border border-gray-300 rounded-md py-2 px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <button
-                  onClick={incrementQuantity}
-                  disabled={quantity >= getMaxQuantity()}
-                  className="flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <PlusIcon className="h-4 w-4" />
-                </button>
-              </div>
-              {selectedSize && selectedSize.use_stock && (
-                <p className="text-sm text-gray-500 mt-2">
-                  {selectedSize.available_stock > 0 
-                    ? `${selectedSize.available_stock} dostępne`
-                    : "Brak w magazynie"
-                  }
-                </p>
-              )}
-            </div>
-
-            {/* Price and Add to Cart */}
-            <div className="border-t pt-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-sm text-gray-500">Całkowita cena</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    ${calculatePrice().toFixed(2)}
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={handleAddToCart}
-                disabled={!isAddToCartEnabled}
-                className={`w-full py-3 px-6 rounded-lg font-medium transition-colors ${
-                  isAddToCartEnabled
-                    ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                {addingToCart 
-                  ? "Dodawanie do koszyka..." 
-                  : !selectedVariant
-                    ? "Wybierz kolor, aby kontynuować"
-                    : !selectedSize
-                      ? "Wybierz rozmiar, aby kontynuować"
-                      : selectedSize && !isStockAvailable(selectedSize)
-                        ? "Brak w magazynie"
-                        : "Dodaj do koszyka"
-                }
-              </button>
-
-              {!selectedVariant && (
-                <p className="text-sm text-gray-500 mt-2">
-                  Proszę wybrać kolor
-                </p>
-              )}
-              {!selectedSize && selectedVariant && (
-                <p className="text-sm text-gray-500 mt-2">
-                  Proszę wybrać rozmiar
-                </p>
-              )}
-              {selectedSize && !isStockAvailable(selectedSize) && (
-                <p className="text-sm text-red-600 mt-2">
-                  Ten rozmiar jest obecnie niedostępny
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      <Footer />
-    </div>
-  );
 }

@@ -5,8 +5,64 @@ import { ClientReviewsGallery } from "@/components/ClientReviewsGallery";
 import { Footer } from "@/components/Footer";
 
 export default function Home() {
+  // Organization structured data for homepage
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'NotSoFluffy',
+    url: 'https://notsofluffy.pl',
+    logo: 'https://notsofluffy.pl/images/logo2.svg',
+    description: 'Sklep z ubrankami dla psów - ciepłe, wygodne i stylowe ubrania dla Twojego pupila',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'PL',
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      email: 'notsofluffy.pl@gmail.com',
+      availableLanguage: 'Polish'
+    },
+    sameAs: [
+      // Add social media URLs when available
+    ]
+  };
+
+  // Local business structured data
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'PetStore',
+    name: 'NotSoFluffy',
+    url: 'https://notsofluffy.pl',
+    description: 'Specializujemy się w sprzedaży wysokiej jakości ubrań dla psów',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'PL',
+    },
+    telephone: 'notsofluffy.pl@gmail.com',
+    priceRange: '$$',
+    currenciesAccepted: 'PLN',
+    paymentAccepted: 'Credit Card, PayPal',
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      opens: '00:00',
+      closes: '23:59'
+    }
+  };
+
   return (
     <div>
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
+
       {/* Header with hero section */}
       <Header />
 

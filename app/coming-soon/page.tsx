@@ -1,4 +1,13 @@
-"use client";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Strona w Budowie | NotSoFluffy',
+  description: 'Strona w trakcie budowy. Wkrótce zostanie uruchomiona.',
+  robots: {
+    index: false, // Don't index coming soon pages
+    follow: false,
+  },
+};
 
 export default function ComingSoonPage() {
   return (

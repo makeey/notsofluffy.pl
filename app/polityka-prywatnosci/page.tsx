@@ -1,3 +1,30 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Polityka Prywatności | NotSoFluffy',
+  description: 'Polityka prywatności sklepu NotSoFluffy. Dowiedz się jak chronimy Twoje dane osobowe i jakie są Twoje prawa.',
+  keywords: ['polityka prywatności', 'ochrona danych', 'RODO', 'prywatność', 'NotSoFluffy'],
+  openGraph: {
+    title: 'Polityka Prywatności | NotSoFluffy',
+    description: 'Polityka prywatności sklepu NotSoFluffy. Informacje o przetwarzaniu danych osobowych.',
+    type: 'website',
+    url: 'https://notsofluffy.pl/polityka-prywatnosci',
+    siteName: 'NotSoFluffy',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Polityka Prywatności | NotSoFluffy',
+    description: 'Polityka prywatności sklepu NotSoFluffy. Informacje o przetwarzaniu danych osobowych.',
+  },
+  robots: {
+    index: false, // Don't index legal pages
+    follow: true,
+  },
+  alternates: {
+    canonical: 'https://notsofluffy.pl/polityka-prywatnosci',
+  },
+};
+
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8">

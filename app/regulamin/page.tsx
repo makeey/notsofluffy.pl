@@ -1,3 +1,30 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Regulamin Sklepu | NotSoFluffy',
+  description: 'Regulamin sklepu internetowego NotSoFluffy. Warunki korzystania ze sklepu, zasady zakupów i zwrotów.',
+  keywords: ['regulamin', 'warunki korzystania', 'zasady sklepu', 'zwroty', 'reklamacje', 'NotSoFluffy'],
+  openGraph: {
+    title: 'Regulamin Sklepu | NotSoFluffy',
+    description: 'Regulamin sklepu internetowego NotSoFluffy. Warunki korzystania i zasady zakupów.',
+    type: 'website',
+    url: 'https://notsofluffy.pl/regulamin',
+    siteName: 'NotSoFluffy',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Regulamin Sklepu | NotSoFluffy',
+    description: 'Regulamin sklepu internetowego NotSoFluffy. Warunki korzystania i zasady zakupów.',
+  },
+  robots: {
+    index: false, // Don't index legal pages
+    follow: true,
+  },
+  alternates: {
+    canonical: 'https://notsofluffy.pl/regulamin',
+  },
+};
+
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8">
