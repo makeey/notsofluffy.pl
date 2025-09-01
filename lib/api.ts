@@ -60,6 +60,13 @@ export interface UserListResponse {
   limit: number;
 }
 
+export interface ShippingProvider {
+  id: string;
+  name: string;
+  cost: number;
+  enabled: boolean;
+}
+
 export interface CategoryListResponse {
   categories: Category[];
   total: number;
@@ -361,7 +368,7 @@ export interface OrderRequest {
   notes?: string;
   requires_invoice: boolean;
   nip?: string;
-  shipping_method?: 'home_delivery' | 'pickup_point';
+  shipping_method?: string;
   pickup_point_code?: string;
   pickup_point_name?: string;
   pickup_point_type?: string;
@@ -1624,6 +1631,11 @@ class ApiClient {
   // Public method to get active client reviews
   async getActiveClientReviews(): Promise<{ client_reviews: ClientReviewResponse[] }> {
     return this.request<{ client_reviews: ClientReviewResponse[] }>('/api/client-reviews');
+  }
+
+  // Shipping Methods
+  async getShippingProviders(): Promise<{ providers: ShippingProvider[] }> {
+    return this.request<{ providers: ShippingProvider[] }>('/api/shipping-providers');
   }
 }
 

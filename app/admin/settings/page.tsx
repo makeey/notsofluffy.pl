@@ -6,19 +6,23 @@ import type { Theme } from '@/components/theme-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Monitor, AlertTriangle, Globe } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Moon, Sun, Monitor, AlertTriangle, Globe, Truck } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { apiClient, SiteSetting } from '@/lib/api';
+import { apiClient, SiteSetting, ShippingProvider } from '@/lib/api';
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const [siteSettings, setSiteSettings] = useState<SiteSetting[]>([]);
+  const [shippingProviders, setShippingProviders] = useState<ShippingProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
+    fetchShippingProviders();
   }, []);
 
   const fetchSettings = async () => {
@@ -33,11 +37,21 @@ export default function SettingsPage() {
     }
   };
 
+  const fetchShippingProviders = async () => {
+    try {
+      const response = await apiClient.getShippingProviders();
+      setShippingProviders(response.providers);
+    } catch (error) {
+      console.error('Failed to fetch shipping providers:', error);
+    }
+  };
+
   const updateSetting = async (key: string, value: string) => {
     try {
       setUpdating(key);
       await apiClient.updateSetting(key, value);
       await fetchSettings(); // Refresh settings
+      await fetchShippingProviders(); // Refresh shipping data
     } catch (error) {
       console.error('Failed to update setting:', error);
     } finally {
@@ -200,6 +214,73 @@ export default function SettingsPage() {
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Shipping Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Truck className="h-5 w-5" />
+              Shipping Settings
+            </CardTitle>
+            <CardDescription>
+              Configure shipping providers and delivery costs
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {shippingProviders.map((provider) => (
+              <div key={provider.id} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-base font-medium">{provider.name}</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Configure pricing and availability for {provider.name} delivery
+                    </p>
+                  </div>
+                  <Switch
+                    checked={provider.enabled}
+                    onCheckedChange={(checked) => 
+                      updateSetting(`shipping_${provider.id}_enabled`, checked.toString())
+                    }
+                    disabled={updating === `shipping_${provider.id}_enabled`}
+                  />
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor={`cost_${provider.id}`} className="text-sm font-medium">
+                      Delivery Cost (PLN)
+                    </Label>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Input
+                        id={`cost_${provider.id}`}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={provider.cost.toString()}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          // Only update if it's a valid number
+                          if (newValue && !isNaN(parseFloat(newValue))) {
+                            updateSetting(`shipping_${provider.id}_cost`, newValue);
+                          }
+                        }}
+                        disabled={updating === `shipping_${provider.id}_cost`}
+                        className="w-32"
+                      />
+                      <span className="text-sm text-muted-foreground">PLN</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {shippingProviders.length === 0 && !loading && (
+              <div className="text-center py-4 text-muted-foreground">
+                No shipping providers configured
+              </div>
+            )}
           </CardContent>
         </Card>
 

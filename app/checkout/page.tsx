@@ -16,7 +16,7 @@ import { Footer } from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
-import type { OrderRequest, AddressRequest, UserAddressResponse } from "@/lib/api";
+import type { OrderRequest, AddressRequest, UserAddressResponse, ShippingProvider } from "@/lib/api";
 import { FurgonetkaMap, type FurgonetkaPoint } from "@/components/FurgonetkaMap";
 
 export default function CheckoutPage() {
@@ -30,6 +30,11 @@ export default function CheckoutPage() {
   // Shipping method state
   const [shippingMethod, setShippingMethod] = useState<'home_delivery' | 'pickup_point'>('home_delivery');
   const [selectedPickupPoint, setSelectedPickupPoint] = useState<FurgonetkaPoint | null>(null);
+  
+  // Shipping cost state
+  const [shippingProviders, setShippingProviders] = useState<ShippingProvider[]>([]);
+  const [shippingCost, setShippingCost] = useState<number>(0);
+  const [shippingLoading, setShippingLoading] = useState(false);
   
   // Saved addresses state
   const [savedAddresses, setSavedAddresses] = useState<UserAddressResponse[]>([]);
@@ -115,6 +120,71 @@ export default function CheckoutPage() {
     }
   }, [sameAsShipping, shippingAddress, selectedShippingAddressId]);
 
+  // Automatically disable "same as shipping" when pickup point is selected
+  useEffect(() => {
+    if (shippingMethod === 'pickup_point') {
+      setSameAsShipping(false);
+    }
+  }, [shippingMethod]);
+
+  // Load shipping providers
+  useEffect(() => {
+    const loadShippingProviders = async () => {
+      try {
+        const response = await apiClient.getShippingProviders();
+        setShippingProviders(response.providers);
+      } catch (err) {
+        console.error('Failed to load shipping providers:', err);
+      }
+    };
+
+    loadShippingProviders();
+  }, []);
+
+  // Calculate shipping cost when pickup point changes
+  useEffect(() => {
+    const calculateShippingCost = async () => {
+      if (shippingMethod === 'pickup_point' && selectedPickupPoint) {
+        setShippingLoading(true);
+        try {
+          // Map courier to shipping provider ID
+          const courierToProvider: { [key: string]: string } = {
+            'inpost': 'inpost',
+            'orlen': 'orlen',
+            'dpd': 'courier',
+            'ups': 'courier',
+            'poczta': 'courier'
+          };
+
+          const providerId = courierToProvider[selectedPickupPoint.courier || 'courier'];
+          const provider = shippingProviders.find(p => p.id === providerId);
+          
+          if (provider && provider.enabled) {
+            setShippingCost(provider.cost);
+          } else {
+            setShippingCost(0);
+          }
+        } catch (err) {
+          console.error('Failed to calculate shipping cost:', err);
+          setShippingCost(0);
+        } finally {
+          setShippingLoading(false);
+        }
+      } else {
+        setShippingCost(0);
+      }
+    };
+
+    calculateShippingCost();
+  }, [selectedPickupPoint, shippingMethod, shippingProviders]);
+
+  // Automatically disable "same as shipping" when pickup point is selected
+  useEffect(() => {
+    if (shippingMethod === 'pickup_point') {
+      setSameAsShipping(false);
+    }
+  }, [shippingMethod]);
+
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
@@ -135,10 +205,12 @@ export default function CheckoutPage() {
       newErrors.pickup_point = "Wybierz punkt odbioru";
     }
 
+    // First name and last name are always required
+    if (!shippingAddress.first_name) newErrors.shipping_first_name = "Imię jest wymagane";
+    if (!shippingAddress.last_name) newErrors.shipping_last_name = "Nazwisko jest wymagane";
+
     // Shipping address validation (only for home delivery)
     if (shippingMethod === 'home_delivery') {
-      if (!shippingAddress.first_name) newErrors.shipping_first_name = "Imię jest wymagane";
-      if (!shippingAddress.last_name) newErrors.shipping_last_name = "Nazwisko jest wymagane";
       if (!shippingAddress.address_line1) newErrors.shipping_address_line1 = "Adres jest wymagany";
       if (!shippingAddress.city) newErrors.shipping_city = "Miasto jest wymagane";
       if (!shippingAddress.state_province) newErrors.shipping_state_province = "Województwo jest wymagane";
@@ -202,8 +274,8 @@ export default function CheckoutPage() {
       // For pickup point, use a minimal shipping address
       const finalShippingAddress = shippingMethod === 'pickup_point' 
         ? {
-            first_name: email.split('@')[0], // Use email prefix as name
-            last_name: '',
+            first_name: shippingAddress.first_name,
+            last_name: shippingAddress.last_name,
             company: '',
             address_line1: selectedPickupPoint?.name || '',
             address_line2: '',
@@ -225,7 +297,10 @@ export default function CheckoutPage() {
         notes: notes || undefined,
         requires_invoice: requiresInvoice,
         nip: requiresInvoice ? nip : undefined,
-        shipping_method: shippingMethod,
+        shipping_method: shippingMethod === 'pickup_point' && selectedPickupPoint ? 
+          (selectedPickupPoint.courier === 'inpost' ? 'inpost' : 
+           selectedPickupPoint.courier === 'orlen' ? 'orlen' : 'courier') : 
+          'courier',
         pickup_point_code: shippingMethod === 'pickup_point' ? selectedPickupPoint?.code : undefined,
         pickup_point_name: shippingMethod === 'pickup_point' ? selectedPickupPoint?.name : undefined,
         pickup_point_type: shippingMethod === 'pickup_point' ? selectedPickupPoint?.type : undefined,
@@ -440,7 +515,17 @@ export default function CheckoutPage() {
 
               <div className="flex items-center justify-between">
                 <dt className="text-gray-600">Dostawa</dt>
-                <dd>{shippingMethod === 'pickup_point' ? 'Paczkomat/Punkt odbioru' : 'Dostawa do domu'} - Bezpłatna</dd>
+                <dd>
+                  {shippingMethod === 'pickup_point' && selectedPickupPoint ? (
+                    shippingLoading ? (
+                      'Obliczanie...'
+                    ) : (
+                      `${shippingCost.toFixed(2)} PLN`
+                    )
+                  ) : (
+                    'Zostanie obliczona po wyborze metody dostawy'
+                  )}
+                </dd>
               </div>
 
               {shippingMethod === 'pickup_point' && selectedPickupPoint && (
@@ -455,14 +540,10 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between">
-                <dt className="text-gray-600">Podatki</dt>
-                <dd>Obliczane przy kasie</dd>
-              </div>
 
               <div className="flex items-center justify-between border-t border-gray-200 pt-6">
                 <dt className="text-base">Suma</dt>
-                <dd className="text-base">${cart.total_price.toFixed(2)}</dd>
+                <dd className="text-base">${((cart.total_price || 0) + shippingCost).toFixed(2)}</dd>
               </div>
             </dl>
 
@@ -471,7 +552,7 @@ export default function CheckoutPage() {
                 <div className="mx-auto max-w-lg">
                   <PopoverButton className="flex w-full items-center py-6 font-medium">
                     <span className="mr-auto text-base">Suma</span>
-                    <span className="mr-2 text-base">${cart.total_price.toFixed(2)}</span>
+                    <span className="mr-2 text-base">${((cart.total_price || 0) + shippingCost).toFixed(2)}</span>
                     <ChevronUpIcon
                       aria-hidden="true"
                       className="size-5 text-gray-500"
@@ -507,7 +588,17 @@ export default function CheckoutPage() {
 
                   <div className="flex items-center justify-between">
                     <dt className="text-gray-600">Dostawa</dt>
-                    <dd>{shippingMethod === 'pickup_point' ? 'Paczkomat/Punkt odbioru' : 'Dostawa do domu'} - Bezpłatna</dd>
+                    <dd>
+                  {shippingMethod === 'pickup_point' && selectedPickupPoint ? (
+                    shippingLoading ? (
+                      'Obliczanie...'
+                    ) : (
+                      `${shippingCost.toFixed(2)} PLN`
+                    )
+                  ) : (
+                    'Zostanie obliczona po wyborze metody dostawy'
+                  )}
+                </dd>
                   </div>
 
                   {shippingMethod === 'pickup_point' && selectedPickupPoint && (
@@ -522,10 +613,6 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between">
-                    <dt className="text-gray-600">Podatki</dt>
-                    <dd>Obliczane przy kasie</dd>
-                  </div>
                 </dl>
               </PopoverPanel>
             </Popover>
@@ -680,16 +767,16 @@ export default function CheckoutPage() {
               </div>
             </section>
 
-            <section aria-labelledby="shipping-heading" className={`mt-10 ${shippingMethod === 'pickup_point' ? 'hidden' : ''}`}>
+            <section aria-labelledby="shipping-heading" className="mt-10">
               <h2
                 id="shipping-heading"
                 className="text-lg font-medium text-gray-900"
               >
-                Adres dostawy
+                {shippingMethod === 'pickup_point' ? 'Dane odbiorcy' : 'Adres dostawy'}
               </h2>
 
-              {/* Saved Addresses Selector */}
-              {user && savedAddresses.length > 0 && (
+              {/* Saved Addresses Selector (only for home delivery) */}
+              {shippingMethod === 'home_delivery' && user && savedAddresses.length > 0 && (
                 <div className="mt-6">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Wybierz z zapisanych adresów
@@ -764,7 +851,8 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+              {/* Name fields - always visible */}
+              <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div>
                   <label
                     htmlFor="shipping-first-name"
@@ -814,12 +902,16 @@ export default function CheckoutPage() {
                     )}
                   </div>
                 </div>
+              </div>
 
-                <div>
-                  <label
-                    htmlFor="shipping-company"
-                    className="block text-sm/6 font-medium text-gray-700"
-                  >
+              {/* Address fields - only for home delivery */}
+              {shippingMethod === 'home_delivery' && (
+                <div className="mt-6 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3">
+                  <div>
+                    <label
+                      htmlFor="shipping-company"
+                      className="block text-sm/6 font-medium text-gray-700"
+                    >
                     Firma (opcjonalne)
                   </label>
                   <div className="mt-2">
@@ -952,8 +1044,8 @@ export default function CheckoutPage() {
                     )}
                   </div>
                 </div>
-
-              </div>
+                </div>
+              )}
             </section>
 
             <section aria-labelledby="billing-heading" className="mt-10">
@@ -964,46 +1056,48 @@ export default function CheckoutPage() {
                 Informacje do faktury
               </h2>
 
-              <div className="mt-6 flex gap-3">
-                <div className="flex h-6 shrink-0 items-center">
-                  <div className="group grid size-4 grid-cols-1">
-                    <input
-                      id="same-as-shipping"
-                      name="same-as-shipping"
-                      type="checkbox"
-                      checked={sameAsShipping}
-                      onChange={(e) => setSameAsShipping(e.target.checked)}
-                      className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
-                    />
-                    <svg
-                      fill="none"
-                      viewBox="0 0 14 14"
-                      className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
-                    >
-                      <path
-                        d="M3 8L6 11L11 3.5"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="opacity-0 group-has-checked:opacity-100"
+              {shippingMethod !== 'pickup_point' && (
+                <div className="mt-6 flex gap-3">
+                  <div className="flex h-6 shrink-0 items-center">
+                    <div className="group grid size-4 grid-cols-1">
+                      <input
+                        id="same-as-shipping"
+                        name="same-as-shipping"
+                        type="checkbox"
+                        checked={sameAsShipping}
+                        onChange={(e) => setSameAsShipping(e.target.checked)}
+                        className="col-start-1 row-start-1 appearance-none rounded-sm border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
                       />
-                      <path
-                        d="M3 7H11"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="opacity-0 group-has-indeterminate:opacity-100"
-                      />
-                    </svg>
+                      <svg
+                        fill="none"
+                        viewBox="0 0 14 14"
+                        className="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-disabled:stroke-gray-950/25"
+                      >
+                        <path
+                          d="M3 8L6 11L11 3.5"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="opacity-0 group-has-checked:opacity-100"
+                        />
+                        <path
+                          d="M3 7H11"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="opacity-0 group-has-indeterminate:opacity-100"
+                        />
+                      </svg>
+                    </div>
                   </div>
+                  <label
+                    htmlFor="same-as-shipping"
+                    className="text-sm/6 font-medium text-gray-900"
+                  >
+                    Takie same jak adres dostawy
+                  </label>
                 </div>
-                <label
-                  htmlFor="same-as-shipping"
-                  className="text-sm/6 font-medium text-gray-900"
-                >
-                  Takie same jak adres dostawy
-                </label>
-              </div>
+              )}
 
               {!sameAsShipping && (
                 <>
