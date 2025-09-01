@@ -31,10 +31,51 @@ interface FurgonetkaMapProps {
   zoom?: number;
 }
 
+interface FurgonetkaMapInstance {
+  show: () => void;
+}
+
+interface FurgonetkaMapConstructor {
+  new (config: FurgonetkaMapConfig): FurgonetkaMapInstance;
+}
+
+interface FurgonetkaMapConfig {
+  courierServices: string[];
+  callback: (params: FurgonetkaCallbackParams) => void;
+  closeModalCallback: () => void;
+  zoom: number;
+  courierServicesFilter?: string[];
+  type?: string;
+  city?: string;
+  street?: string;
+  pointTypesFilter?: string[];
+}
+
+interface FurgonetkaCallbackParams {
+  point: {
+    code: string;
+    name: string;
+    type?: string;
+    courier?: string;
+    provider?: string;
+    address?: string;
+    full_address?: string;
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
+    lat?: number;
+    latitude?: number;
+    lng?: number;
+    longitude?: number;
+    services?: string[];
+  };
+}
+
 declare global {
   interface Window {
     Furgonetka?: {
-      Map: any;
+      Map: FurgonetkaMapConstructor;
     };
   }
 }
@@ -51,7 +92,6 @@ export const FurgonetkaMap: React.FC<FurgonetkaMapProps> = ({
   className = '',
   buttonText = 'Wybierz punkt odbioru',
   selectedPoint = null,
-  limit = 50,
   zoom = 14
 }) => {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
@@ -87,7 +127,7 @@ export const FurgonetkaMap: React.FC<FurgonetkaMapProps> = ({
   }, []);
 
   // Callback function for point selection
-  const handlePointSelect = (params: any) => {
+  const handlePointSelect = (params: FurgonetkaCallbackParams) => {
     console.log('Point selected:', params);
     
     const pointData: FurgonetkaPoint = {
@@ -97,8 +137,8 @@ export const FurgonetkaMap: React.FC<FurgonetkaMapProps> = ({
       courier: params.point.courier || params.point.provider,
       address: params.point.address || params.point.full_address,
       coordinates: params.point.coordinates || {
-        lat: params.point.lat || params.point.latitude,
-        lng: params.point.lng || params.point.longitude
+        lat: params.point.lat || params.point.latitude || 0,
+        lng: params.point.lng || params.point.longitude || 0
       },
       services: params.point.services || []
     };
@@ -124,29 +164,17 @@ export const FurgonetkaMap: React.FC<FurgonetkaMapProps> = ({
     setError(null);
 
     try {
-      const mapConfig: any = {
+      const mapConfig: FurgonetkaMapConfig = {
         courierServices,
         callback: handlePointSelect,
         closeModalCallback: handleModalClose,
-        zoom
+        zoom,
+        ...(courierServicesFilter.length > 0 && { courierServicesFilter }),
+        ...(type && { type }),
+        ...(city && { city }),
+        ...(street && { street }),
+        ...(pointTypesFilter.length > 0 && { pointTypesFilter })
       };
-
-      // Add optional parameters only if they have values
-      if (courierServicesFilter.length > 0) {
-        mapConfig.courierServicesFilter = courierServicesFilter;
-      }
-      if (type) {
-        mapConfig.type = type;
-      }
-      if (city) {
-        mapConfig.city = city;
-      }
-      if (street) {
-        mapConfig.street = street;
-      }
-      if (pointTypesFilter.length > 0) {
-        mapConfig.pointTypesFilter = pointTypesFilter;
-      }
 
       console.log('Map config:', mapConfig);
       
