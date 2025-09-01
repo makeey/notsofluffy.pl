@@ -361,6 +361,11 @@ export interface OrderRequest {
   notes?: string;
   requires_invoice: boolean;
   nip?: string;
+  shipping_method?: 'home_delivery' | 'pickup_point';
+  pickup_point_code?: string;
+  pickup_point_name?: string;
+  pickup_point_type?: string;
+  pickup_point_address?: string;
 }
 
 export interface ShippingAddressResponse {
@@ -447,6 +452,11 @@ export interface OrderResponse {
   notes?: string;
   requires_invoice: boolean;
   nip?: string;
+  shipping_method?: 'home_delivery' | 'pickup_point';
+  pickup_point_code?: string;
+  pickup_point_name?: string;
+  pickup_point_type?: string;
+  pickup_point_address?: string;
   shipping_address?: ShippingAddressResponse;
   billing_address?: BillingAddressResponse;
   items?: OrderItemResponse[];
