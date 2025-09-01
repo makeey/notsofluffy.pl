@@ -30,7 +30,7 @@ export default function TermsOfServicePage() {
     <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Regulamin</h1>
-        
+
         <div className="prose prose-lg max-w-none">
           <p className="text-gray-600 mb-6">
             Ostatnia aktualizacja: {new Date().toLocaleDateString('pl-PL')}
@@ -127,15 +127,15 @@ export default function TermsOfServicePage() {
               2. Koszt dostawy ponosi Klient, chyba że Sprzedawca postanowi inaczej.
             </p>
             <p className="text-gray-700 mb-4">
-              3. Czas realizacji zamówienia wynosi od 7 do 21 dni roboczych.
+              3. Czas realizacji zamówienia wynosi od 2 do 21 dni roboczych.
             </p>
             <p className="text-gray-700 mb-4">
               4. Dostępne metody dostawy:
             </p>
             <ul className="list-disc list-inside text-gray-700 mb-4 ml-4">
-              <li>Kurier DPD</li>
               <li>Kurier InPost</li>
               <li>Paczkomaty InPost</li>
+              <li>Paczkomaty Orlen</li>
               <li>Odbiór osobisty</li>
             </ul>
           </section>
@@ -158,6 +158,11 @@ export default function TermsOfServicePage() {
             </ul>
             <p className="text-gray-700 mb-4">
               4. Aby odstąpić od umowy, należy przesłać oświadczenie na adres e-mail: notsofluffy.pl@gmail.com
+
+            </p>
+
+            <p className="text-gray-700 mb-4">
+              5. Klient ponosi opłatę za usługi kurierskie, koszt których nie jest zwracany
             </p>
           </section>
 
@@ -171,7 +176,6 @@ export default function TermsOfServicePage() {
             </p>
             <ul className="list-disc list-inside text-gray-700 mb-4 ml-4">
               <li>E-mailem na adres: notsofluffy.pl@gmail.com</li>
-              <li>Pisemnie na adres siedziby Sprzedawcy</li>
             </ul>
             <p className="text-gray-700 mb-4">
               3. Reklamacja powinna zawierać:
@@ -223,7 +227,6 @@ export default function TermsOfServicePage() {
               Twój Startup<br />
               Polska<br />
               E-mail: notsofluffy.pl@gmail.com<br />
-              Telefon: +48 XXX XXX XXX
             </p>
           </section>
         </div>

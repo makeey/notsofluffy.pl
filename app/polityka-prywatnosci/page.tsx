@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-white py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Polityka Prywatności</h1>
-        
+
         <div className="prose prose-lg max-w-none">
           <p className="text-gray-600 mb-6">
             Ostatnia aktualizacja: {new Date().toLocaleDateString('pl-PL')}
@@ -182,8 +182,9 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className="list-none text-gray-700 mb-4 ml-4">
               <li>E-mail: notsofluffy.pl@gmail.com</li>
-              <li>Formularz kontaktowy: <a href="/kontakt" className="text-indigo-600 hover:text-indigo-500">dostępny tutaj</a></li>
-              <li>Adres: Twój Startup, Polska</li>
+              <li>Adres: Fundacja Rozwoju Przedsiębiorczości Twój StartUp
+                ul. Żurawia 6/12 lok. 766
+                00-503 Warszawa, Polska</li>
             </ul>
           </section>
         </div>
