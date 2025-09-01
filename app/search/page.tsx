@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import SearchPageContent from './SearchPageContent';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(
   { searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }
 ): Promise<Metadata> {
