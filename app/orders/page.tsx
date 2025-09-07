@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckIcon, TruckIcon, ClockIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, TruckIcon, ClockIcon, XMarkIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient, type OrderResponse } from "@/lib/api";
 import { Header } from "@/components/Header";
@@ -12,6 +12,8 @@ import Link from "next/link";
 // Polish status translations
 const getStatusText = (status: string): string => {
   switch (status) {
+    case "awaiting_payment":
+      return "Oczekuje na płatność";
     case "pending":
       return "Oczekujące";
     case "processing":
@@ -30,6 +32,8 @@ const getStatusText = (status: string): string => {
 // Status icon component
 const StatusIcon = ({ status }: { status: string }) => {
   switch (status) {
+    case "awaiting_payment":
+      return <CreditCardIcon aria-hidden="true" className="size-6 flex-none text-yellow-500" />;
     case "delivered":
       return <CheckIcon aria-hidden="true" className="size-6 flex-none text-green-500" />;
     case "shipped":

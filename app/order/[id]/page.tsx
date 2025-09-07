@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { CheckIcon, TruckIcon, ClockIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, TruckIcon, ClockIcon, XMarkIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient, type OrderResponse } from "@/lib/api";
 import { Header } from "@/components/Header";
@@ -13,6 +13,8 @@ import Image from "next/image";
 // Polish status translations
 const getStatusText = (status: string): string => {
   switch (status) {
+    case "awaiting_payment":
+      return "Oczekuje na płatność";
     case "pending":
       return "Oczekujące";
     case "processing":
@@ -31,6 +33,8 @@ const getStatusText = (status: string): string => {
 // Status icon component
 const StatusIcon = ({ status }: { status: string }) => {
   switch (status) {
+    case "awaiting_payment":
+      return <CreditCardIcon aria-hidden="true" className="size-6 flex-none text-yellow-500" />;
     case "delivered":
       return <CheckIcon aria-hidden="true" className="size-6 flex-none text-green-500" />;
     case "shipped":
@@ -41,6 +45,32 @@ const StatusIcon = ({ status }: { status: string }) => {
       return <XMarkIcon aria-hidden="true" className="size-6 flex-none text-red-500" />;
     default:
       return <ClockIcon aria-hidden="true" className="size-6 flex-none text-gray-500" />;
+  }
+};
+
+// Payment method translations
+const getPaymentMethodText = (method: string): string => {
+  switch (method) {
+    case "przelew_tradycyjny":
+      return "Przelew tradycyjny";
+    default:
+      return method;
+  }
+};
+
+// Payment status translations
+const getPaymentStatusText = (status: string): string => {
+  switch (status) {
+    case "pending":
+      return "Oczekujące";
+    case "completed":
+      return "Zakończone";
+    case "failed":
+      return "Nieudane";
+    case "refunded":
+      return "Zwrócone";
+    default:
+      return status;
   }
 };
 
@@ -402,10 +432,10 @@ export default function OrderPage() {
               {order.payment_method && (
                 <div className="mt-4 pt-4 border-t border-gray-300">
                   <p className="text-sm text-gray-700">
-                    <span className="font-medium text-gray-900">Metoda płatności:</span> {order.payment_method}
+                    <span className="font-medium text-gray-900">Metoda płatności:</span> {getPaymentMethodText(order.payment_method)}
                   </p>
                   <p className="text-sm text-gray-700 mt-1">
-                    <span className="font-medium text-gray-900">Status płatności:</span> {order.payment_status}
+                    <span className="font-medium text-gray-900">Status płatności:</span> {getPaymentStatusText(order.payment_status)}
                   </p>
                 </div>
               )}

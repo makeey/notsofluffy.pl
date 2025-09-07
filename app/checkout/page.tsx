@@ -69,7 +69,7 @@ export default function CheckoutPage() {
     phone: "",
   });
 
-  const [paymentMethod] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("przelew_tradycyjny");
   const [notes, setNotes] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   
@@ -1449,6 +1449,53 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               )}
+            </section>
+
+            {/* Payment Method Section */}
+            <section aria-labelledby="payment-heading" className="mt-10">
+              <h2
+                id="payment-heading"
+                className="text-lg font-medium text-gray-900"
+              >
+                Metoda płatności
+              </h2>
+
+              <div className="mt-6">
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <input
+                      id="bank-transfer"
+                      name="payment-method"
+                      type="radio"
+                      value="przelew_tradycyjny"
+                      checked={paymentMethod === "przelew_tradycyjny"}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    />
+                    <label htmlFor="bank-transfer" className="ml-3 block text-sm font-medium text-gray-700">
+                      Przelew tradycyjny
+                    </label>
+                  </div>
+                </div>
+                
+                {paymentMethod === "przelew_tradycyjny" && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-blue-800">Informacja o płatności</h3>
+                        <div className="mt-2 text-sm text-blue-700">
+                          <p>Po złożeniu zamówienia otrzymasz dane do przelewu na podany adres e-mail. Zamówienie zostanie zrealizowane po otrzymaniu płatności.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </section>
 
             <section aria-labelledby="notes-heading" className="mt-10">

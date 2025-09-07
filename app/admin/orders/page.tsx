@@ -56,6 +56,32 @@ const getStatusColor = (status: string) => {
   }
 };
 
+// Payment method translations
+const getPaymentMethodText = (method: string): string => {
+  switch (method) {
+    case "przelew_tradycyjny":
+      return "Przelew tradycyjny";
+    default:
+      return method;
+  }
+};
+
+// Payment status translations
+const getPaymentStatusText = (status: string): string => {
+  switch (status) {
+    case "pending":
+      return "Oczekujące";
+    case "completed":
+      return "Zakończone";
+    case "failed":
+      return "Nieudane";
+    case "refunded":
+      return "Zwrócone";
+    default:
+      return status;
+  }
+};
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -224,10 +250,10 @@ export default function OrdersPage() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{order.payment_status}</div>
+                      <div className="font-medium">{getPaymentStatusText(order.payment_status)}</div>
                       {order.payment_method && (
                         <div className="text-sm text-muted-foreground">
-                          {order.payment_method}
+                          {getPaymentMethodText(order.payment_method)}
                         </div>
                       )}
                     </div>

@@ -15,17 +15,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const statusUpdateSchema = z.object({
-  status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
+  status: z.enum(['awaiting_payment', 'pending', 'processing', 'shipped', 'delivered', 'cancelled']),
 });
 
 type StatusUpdateData = z.infer<typeof statusUpdateSchema>;
 
 const getStatusIcon = (status: string) => {
   switch (status) {
+    case 'awaiting_payment':
+      return <CreditCard className="w-4 h-4" />;
     case 'pending':
       return <Package className="w-4 h-4" />;
     case 'processing':
-      return <CreditCard className="w-4 h-4" />;
+      return <Package className="w-4 h-4" />;
     case 'shipped':
       return <Truck className="w-4 h-4" />;
     case 'delivered':
@@ -39,6 +41,8 @@ const getStatusIcon = (status: string) => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
+    case 'awaiting_payment':
+      return 'bg-orange-100 text-orange-800';
     case 'pending':
       return 'bg-yellow-100 text-yellow-800';
     case 'processing':
@@ -51,6 +55,32 @@ const getStatusColor = (status: string) => {
       return 'bg-red-100 text-red-800';
     default:
       return 'bg-gray-100 text-gray-800';
+  }
+};
+
+// Payment method translations
+const getPaymentMethodText = (method: string): string => {
+  switch (method) {
+    case "przelew_tradycyjny":
+      return "Przelew tradycyjny";
+    default:
+      return method;
+  }
+};
+
+// Payment status translations
+const getPaymentStatusText = (status: string): string => {
+  switch (status) {
+    case "pending":
+      return "Oczekujące";
+    case "completed":
+      return "Zakończone";
+    case "failed":
+      return "Nieudane";
+    case "refunded":
+      return "Zwrócone";
+    default:
+      return status;
   }
 };
 
@@ -105,7 +135,7 @@ export default function OrderDetailsPage() {
 
   const openStatusUpdateDialog = () => {
     if (order) {
-      setValue('status', order.status as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled');
+      setValue('status', order.status as 'awaiting_payment' | 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled');
       setIsStatusUpdateDialogOpen(true);
     }
   };
@@ -160,7 +190,7 @@ export default function OrderDetailsPage() {
                   {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
-                  Payment: {order.payment_status}
+                  Payment: {getPaymentStatusText(order.payment_status)}
                 </span>
               </div>
             </CardContent>
@@ -399,12 +429,13 @@ export default function OrderDetailsPage() {
               <Label htmlFor="status">Status</Label>
               <Select 
                 value={order.status} 
-                onValueChange={(value) => setValue('status', value as 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled')}
+                onValueChange={(value) => setValue('status', value as 'awaiting_payment' | 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled')}
               >
                 <SelectTrigger className="mt-2">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="processing">Processing</SelectItem>
                   <SelectItem value="shipped">Shipped</SelectItem>
