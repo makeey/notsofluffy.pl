@@ -243,7 +243,7 @@ export default function ColorsPage() {
                     {color.image ? (
                       <div className="flex items-center space-x-2">
                         <img
-                          src={`http://localhost:8080/${color.image.path}`}
+                          src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${color.image.path}`}
                           alt={color.image.original_name}
                           className="w-8 h-8 object-cover rounded"
                         />

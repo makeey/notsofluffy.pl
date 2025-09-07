@@ -290,7 +290,7 @@ export default function ProductsAdmin() {
                 {/* Main Image */}
                 <div className="aspect-square bg-muted overflow-hidden rounded-t-lg">
                   <img
-                    src={`http://localhost:8080/${product.main_image.path}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${product.main_image.path}`}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />

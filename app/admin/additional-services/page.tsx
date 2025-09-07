@@ -251,7 +251,7 @@ export default function AdditionalServicesAdmin() {
                     {service.images.slice(0, 3).map((image) => (
                       <div key={image.id} className="aspect-square bg-muted rounded-md overflow-hidden">
                         <img
-                          src={`http://localhost:8080/${image.path}`}
+                          src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                           alt={image.original_name}
                           className="w-full h-full object-cover"
                         />

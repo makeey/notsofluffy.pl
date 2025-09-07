@@ -177,7 +177,7 @@ export default function ImagesPage() {
               <Card key={image.id} className="hover:shadow-md transition-shadow">
                 <div className="aspect-square bg-muted rounded-t-lg overflow-hidden relative">
                   <Image
-                    src={`http://localhost:8080/${image.path}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                     alt={image.original_name}
                     fill
                     className="object-cover"
@@ -199,7 +199,7 @@ export default function ImagesPage() {
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() => window.open(`http://localhost:8080/${image.path}`, '_blank')}
+                      onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`, '_blank')}
                     >
                       <Eye className="w-4 h-4 mr-1" />
                       View

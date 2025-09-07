@@ -316,7 +316,7 @@ export function ProductVariantForm({ productVariant, onSuccess }: ProductVariant
                   >
                     <div className="aspect-square bg-gray-100 flex items-center justify-center">
                       <img
-                        src={`http://localhost:8080/${image.path}`}
+                        src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                         alt={image.filename}
                         className="w-full h-full object-cover"
                       />

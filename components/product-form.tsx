@@ -331,7 +331,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                 <div className="mb-4">
                   <div className="aspect-square w-32 bg-muted rounded-md overflow-hidden">
                     <img
-                      src={`http://localhost:8080/${images.find((img) => img.id === selectedMainImageId)?.path}`}
+                      src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${images.find((img) => img.id === selectedMainImageId)?.path}`}
                       alt="Main image"
                       className="w-full h-full object-cover"
                     />
@@ -390,7 +390,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                           >
                             <div className="flex items-center space-x-2">
                               <img
-                                src={`http://localhost:8080/${image.path}`}
+                                src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                                 alt={image.original_name}
                                 className="w-6 h-6 object-cover rounded"
                               />
@@ -422,7 +422,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                             >
                               <div className="flex items-center space-x-2">
                                 <img
-                                  src={`http://localhost:8080/${image.path}`}
+                                  src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                                   alt={image.original_name}
                                   className="w-6 h-6 object-cover rounded"
                                 />

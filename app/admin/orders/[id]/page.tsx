@@ -58,15 +58,6 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// Payment method translations
-const getPaymentMethodText = (method: string): string => {
-  switch (method) {
-    case "przelew_tradycyjny":
-      return "Przelew tradycyjny";
-    default:
-      return method;
-  }
-};
 
 // Payment status translations
 const getPaymentStatusText = (status: string): string => {

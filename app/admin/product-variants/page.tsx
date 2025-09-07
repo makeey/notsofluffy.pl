@@ -318,7 +318,7 @@ export default function ProductVariantsAdmin() {
                                   className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 overflow-hidden"
                                 >
                                   <img
-                                    src={`http://localhost:8080/${image.path}`}
+                                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                                     alt={image.filename}
                                     className="w-full h-full object-cover"
                                   />

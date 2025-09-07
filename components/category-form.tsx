@@ -169,7 +169,7 @@ export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
                 <SelectItem key={image.id} value={image.id.toString()}>
                   <div className="flex items-center space-x-2">
                     <img
-                      src={`http://localhost:8080/${image.path}`}
+                      src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                       alt={image.original_name}
                       className="w-6 h-6 object-cover rounded"
                     />

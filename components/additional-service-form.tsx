@@ -192,7 +192,7 @@ export function AdditionalServiceForm({ service, onSuccess }: AdditionalServiceF
                           className="flex items-center space-x-2 cursor-pointer flex-1"
                         >
                           <img
-                            src={`http://localhost:8080/${image.path}`}
+                            src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/${image.path}`}
                             alt={image.original_name}
                             className="w-12 h-12 object-cover rounded"
                           />
